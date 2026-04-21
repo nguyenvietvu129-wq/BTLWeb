@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Kho Linh Kiện</title>
+    <link rel="stylesheet" th:href="@{/css/admin/admin-dashboard.css}">
+    <script th:src="@{https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js}"></script>
+</head>
+<body>
+<div class="admin-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>Kho Linh Kiện</h2>
+            <p>Admin Panel</p>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="dashboard">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" data-page="users">
+                <span class="nav-icon">👥</span>
+                <span>Quản lý tài khoản</span>
+            </a>
+            <a href="#" class="nav-item" data-page="products">
+                <span class="nav-icon">🛍️</span>
+                <span>Quản lý sản phẩm</span>
+            </a>
+            <a href="#" class="nav-item" data-page="orders">
+                <span class="nav-icon">📦</span>
+                <span>Quản lý đơn hàng</span>
+            </a>
+            <a href="#" class="nav-item" data-page="revenue">
+                <span class="nav-icon">💰</span>
+                <span>Thống kê doanh thu</span>
+            </a>
+            <a href="#" class="nav-item" data-page="top-products">
+                <span class="nav-icon">⭐</span>
+                <span>Sản phẩm bán chạy</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <button id="logout-btn" class="logout-btn">
+                <span>🚪</span>
+                <span>Đăng xuất</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="admin-header">
+            <div class="header-left">
+                <!-- SỬA DÒNG NÀY: bỏ #authentication.name, dùng placeholder -->
+                <h1 id="welcome-message">Xin chào, <span id="admin-name">Admin</span></h1>
+            </div>
+            <div class="header-right">
+                <div class="admin-info">
+                    <span class="admin-role">Administrator</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div id="dashboard-content" class="content-area">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-info">
+                        <h3>Tổng số đơn hàng</h3>
+                        <p class="stat-value" th:text="${stats.totalOrders}">0</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <h3>Tổng số người dùng</h3>
+                        <p class="stat-value" th:text="${stats.totalUsers}">0</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🛍️</div>
+                    <div class="stat-info">
+                        <h3>Tổng số sản phẩm</h3>
+                        <p class="stat-value" th:text="${stats.totalProducts}">0</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-info">
+                        <h3>Tổng doanh thu</h3>
+                        <p class="stat-value" id="total-revenue" th:text="${stats.totalRevenue}">0 VND</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="top-products-section">
+                <h2>🏆 Top 10 sản phẩm bán chạy nhất</h2>
+                <div class="table-container">
+                    <table class="products-table">
+                        <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Hình ảnh</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Số lượng đã bán</th>
+                            <th>Doanh thu</th>
+                        </tr>
+                        </thead>
+                        <tbody id="top-products-list">
+                        <tr>
+                            <td colspan="5" class="loading-text">Đang tải dữ liệu...</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="users-content" class="content-area" style="display: none;">
+            <h2>Quản lý tài khoản</h2>
+            <p>Đang phát triển...</p>
+        </div>
+        <div id="products-content" class="content-area" style="display: none;">
+            <h2>Quản lý sản phẩm</h2>
+            <p>Đang phát triển...</p>
+        </div>
+        <div id="orders-content" class="content-area" style="display: none;">
+            <h2>Quản lý đơn hàng</h2>
+            <p>Đang phát triển...</p>
+        </div>
+        <div id="revenue-content" class="content-area" style="display: none;">
+            <h2>Thống kê doanh thu</h2>
+            <p>Đang phát triển...</p>
+        </div>
+        <div id="top-products-content" class="content-area" style="display: none;">
+            <h2>Sản phẩm bán chạy</h2>
+            <p>Đang phát triển...</p>
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/js/admin/admin-dashboard.js}"></script>
+<script>
+    // Truyền dữ liệu từ model sang JavaScript
+    const statsFromServer = /*[[${stats}]]*/ {};
+
+    // Hiển thị tên admin từ localStorage
+    const adminName = localStorage.getItem('username') || 'Admin';
+    document.getElementById('admin-name').textContent = adminName;
+</script>
+</body>
+</html>
