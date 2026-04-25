@@ -62,4 +62,23 @@ public class OrderController {
                     .build();
         }
     }
+    // API cho Admin xem chi tiết đơn hàng
+    @GetMapping("/admin/{orderId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<OrderResponse> getOrderByIdForAdmin(@PathVariable Long orderId) {
+        try {
+            OrderResponse order = orderService.getOrderByIdForAdmin(orderId);
+            return ApiResponse.<OrderResponse>builder()
+                    .success(true)
+                    .message("Lấy thông tin chi tiết đơn hàng thành công")
+                    .data(order)
+                    .build();
+        } catch (Exception ex) {
+            return ApiResponse.<OrderResponse>builder()
+                    .success(false)
+                    .message("Lấy thông tin thất bại")
+                    .error(ex.getMessage())
+                    .build();
+        }
+    }
 }
