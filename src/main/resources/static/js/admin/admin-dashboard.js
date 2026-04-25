@@ -43,6 +43,7 @@ function bindEvents() {
             loadTopProducts();
         } else if (page === 'users') {
             $('#users-content').show();
+            loadAllUsers();
         } else if (page === 'products') {
             $('#products-content').show();
         } else if (page === 'orders') {
@@ -198,6 +199,39 @@ function showError(message) {
     }, 3000);
 }
 
+function loadAllUsers() {
+    const token = localStorage.getItem('token');
+    const tbody = $('#users-list-tbody');
+    tbody.html('<tr><td colspan="5" class="loading-text">Đang tải...</td></tr>');
+
+    $.ajax({
+        url: '/admin/users/list',
+        method: 'GET',
+        headers: { 'Authorization': 'Bearer ' + token },
+        success: function(response) {
+            if (response.success) {
+                tbody.empty();
+                response.data.forEach((user, index) => {
+                    tbody.append(`
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td><strong>${escapeHtml(user.username)}</strong></td>
+                            <td>${escapeHtml(user.email)}</td>
+                            <td><span class="admin-role">${user.role}</span></td>
+                            <td>
+                                <button class="logout-btn" style="background:#f39c12; padding:5px 10px; font-size:12px;">Sửa</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            }
+        },
+        error: function() {
+            showError('Không thể tải danh sách người dùng');
+        }
+    });
+}
+
 function handleLogout() {
     // Clear localStorage
     localStorage.removeItem('token');
@@ -212,6 +246,8 @@ function handleLogout() {
     // Redirect to login page
     window.location.href = '/api/login';
 }
+
+
 
 // Refresh data every 30 seconds (optional)
 setInterval(() => {

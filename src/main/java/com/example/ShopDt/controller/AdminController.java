@@ -1,8 +1,11 @@
 package com.example.ShopDt.controller;
 
+import com.example.ShopDt.dto.response.ApiResponse;
+import com.example.ShopDt.dto.response.UserResponse;
 import com.example.ShopDt.repository.OrderRepository;
 import com.example.ShopDt.repository.ProductRepository;
 import com.example.ShopDt.repository.UserRepository;
+import com.example.ShopDt.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -11,8 +14,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -24,6 +29,7 @@ public class AdminController {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
 
     @GetMapping
     public String adminDashboard(Model model) {
@@ -47,5 +53,25 @@ public class AdminController {
         model.addAttribute("adminName", username);  // Thêm dòng này
 
         return "admin/admin-dashboard";
+    }
+
+    // Thêm API endpoint để lấy danh sách user cho frontend gọi qua AJAX
+    @GetMapping("/users/list")
+    @ResponseBody
+    public ApiResponse<List<UserResponse>> getAllUsersForAdmin() {
+        try {
+            List<UserResponse> users = userService.getUsers();
+            return ApiResponse.<List<UserResponse>>builder()
+                    .success(true)
+                    .message("Lấy danh sách người dùng thành công")
+                    .data(users)
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.<List<UserResponse>>builder()
+                    .success(false)
+                    .message("Lỗi khi lấy danh sách người dùng")
+                    .error(e.getMessage())
+                    .build();
+        }
     }
 }
