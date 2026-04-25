@@ -2,17 +2,21 @@ package com.example.ShopDt.controller;
 
 import com.example.ShopDt.dto.response.ApiResponse;
 import com.example.ShopDt.dto.response.UserResponse;
+import com.example.ShopDt.repository.OrderDetailRepository;
 import com.example.ShopDt.repository.OrderRepository;
 import com.example.ShopDt.repository.ProductRepository;
 import com.example.ShopDt.repository.UserRepository;
 import com.example.ShopDt.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
+
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +32,7 @@ public class AdminController {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final OrderDetailRepository orderDetailRepository;
 
     @GetMapping
     public String adminDashboard(Model model) {
@@ -118,4 +123,40 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/statistics/overview")
+    @ResponseBody
+    public ApiResponse<Map<String, Object>> getOverviewStats() {
+        Map<String, Object> data = new HashMap<>();
+
+        // Các thông số tổng quát (Bạn đã có logic này trong hàm adminDashboard)
+        data.put("totalOrders", orderRepository.count());
+        data.put("totalUsers", userRepository.count());
+        data.put("totalProducts", productRepository.count());
+        data.put("totalRevenue", orderRepository.sumTotalPriceByCompletedOrders());
+
+        // Dữ liệu cho biểu đồ doanh thu
+        List<Object[]> revenueData = orderRepository.getRevenueByDay();
+        data.put("revenueChart", revenueData);
+
+        return ApiResponse.<Map<String, Object>>builder().success(true).data(data).build();
+    }
+
+    @GetMapping("/statistics/top-products")
+    @ResponseBody
+    public ApiResponse<List<Map<String, Object>>> getTopProducts() {
+        // Sử dụng PageRequest.of để tạo đối tượng Pageable của Spring Data
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Object[]> results = orderDetailRepository.getTopSellingProducts(pageable);
+
+        List<Map<String, Object>> list = results.stream().map(row -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("productName", row[0]);
+            map.put("totalSold", row[1]);
+            map.put("totalRevenue", row[2]);
+            map.put("image", row[3]);
+            return map;
+        }).toList();
+
+        return ApiResponse.<List<Map<String, Object>>>builder().success(true).data(list).build();
+    }
 }

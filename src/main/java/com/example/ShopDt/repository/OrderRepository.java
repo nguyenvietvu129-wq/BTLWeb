@@ -5,8 +5,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface OrderRepository extends JpaRepository<Order ,Long> {
     @Query("SELECT COALESCE(SUM(o.totalPrice), 0) FROM Order o WHERE o.status = 1")
     Long sumTotalPriceByCompletedOrders();
+
+    // Lấy doanh thu theo từng ngày trong tháng hiện tại
+    @Query("SELECT CAST(o.createAt AS date) as date, SUM(o.totalPrice) as total " +
+            "FROM Order o WHERE o.status = 1 " +
+            "GROUP BY CAST(o.createAt AS date) ORDER BY date")
+    List<Object[]> getRevenueByDay();
 }

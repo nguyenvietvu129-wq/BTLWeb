@@ -68,7 +68,7 @@ function loadStatistics() {
     const token = localStorage.getItem('token');
 
     $.ajax({
-        url: '/api/admin/statistics/overview',
+        url: '/admin/statistics/overview',
         method: 'GET',
         headers: {
             'Authorization': 'Bearer ' + token
@@ -106,7 +106,7 @@ function loadTopProducts() {
     const token = localStorage.getItem('token');
 
     $.ajax({
-        url: '/api/admin/statistics/top-products',
+        url: '/admin/statistics/top-products',
         method: 'GET',
         headers: {
             'Authorization': 'Bearer ' + token
@@ -664,6 +664,48 @@ function viewOrderDetail(orderId) {
 
 function closeOrderDetailModal() {
     $('#orderDetailModal').hide();
+}
+
+let myChart = null; // Biến toàn cục để lưu instance của biểu đồ
+
+function displayStatistics(data) {
+    // Cập nhật các thẻ text
+    $('#total-revenue').text(formatCurrency(data.totalRevenue));
+    $('#total-orders-val').text(formatNumber(data.totalOrders));
+    $('#total-users-val').text(formatNumber(data.totalUsers));
+    $('#total-products-val').text(formatNumber(data.totalProducts));
+
+    // Vẽ biểu đồ doanh thu
+    if (data.revenueChart) {
+        const labels = data.revenueChart.map(item => item[0]); // Ngày
+        const values = data.revenueChart.map(item => item[1]); // Tiền
+
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+
+        if (myChart) myChart.destroy(); // Xóa biểu đồ cũ nếu có
+
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Doanh thu (VND)',
+                    data: values,
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
 }
 
 function handleLogout() {
