@@ -131,30 +131,26 @@ public class ProductController {
         productService.delete(id);
     }
 
+    // Dán đoạn này vào trong class ProductController
     @GetMapping("/search")
-    @Operation(summary = "Tìm kiếm sản phẩm theo danh mục (có phân trang)")
-    public ApiResponse<PaginatedResponse<ProductResponse>> getProductsByCategory(
-            @Parameter(description = "ID của danh mục")
-            @RequestParam Long categoryId,
-
-            @Parameter(description = "Số trang (bắt đầu từ 0)")
+    @Operation(summary = "Tìm kiếm sản phẩm theo tiêu chí")
+    public ApiResponse<PaginatedResponse<ProductResponse>> searchProducts(
+            @ModelAttribute ProductSearchRequest searchRequest,
             @RequestParam(defaultValue = "0") int page,
-
-            @Parameter(description = "Số lượng sản phẩm mỗi trang")
             @RequestParam(defaultValue = "12") int size) {
 
         try {
-            PaginatedResponse<ProductResponse> result = productService.findByCategoryIdPaginated(categoryId, page, size);
-
+            PaginatedResponse<ProductResponse> result = productService.searchProducts(
+                    searchRequest, page, size);
             return ApiResponse.<PaginatedResponse<ProductResponse>>builder()
                     .success(true)
-                    .message("Lọc sản phẩm theo danh mục thành công")
+                    .message("Tìm kiếm sản phẩm thành công")
                     .data(result)
                     .build();
         } catch (Exception ex) {
             return ApiResponse.<PaginatedResponse<ProductResponse>>builder()
                     .success(false)
-                    .message("Lỗi khi lọc sản phẩm: " + ex.getMessage())
+                    .message("Lỗi tìm kiếm: " + ex.getMessage())
                     .build();
         }
     }

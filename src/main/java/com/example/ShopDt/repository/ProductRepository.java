@@ -15,7 +15,7 @@ public interface ProductRepository extends JpaRepository<Product,Long> {
     @Query("SELECT DISTINCT p FROM Product p " +
             "LEFT JOIN p.productCategories pc " +
             "LEFT JOIN pc.category c " +
-            "WHERE 1=1" +
+            "WHERE 1=1 " + // <--- ĐÃ THÊM DẤU CÁCH Ở ĐÂY ĐỂ KHÔNG BỊ DÍNH CHỮ
             "AND (:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
             "AND (:listCategoryId IS NULL OR c.id IN :listCategoryId) " +
             "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
