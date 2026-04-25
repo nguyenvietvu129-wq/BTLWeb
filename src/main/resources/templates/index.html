@@ -40,8 +40,17 @@
         </section>
 
         <section class="section-head">
-            <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <h3>Vi điều khiển <span id="total-items">(0 sản phẩm)</span></h3>
+
+                <div class="sort-options">
+                    <label for="sortPrice" style="font-weight: bold; margin-right: 10px;">Sắp xếp theo:</label>
+                    <select id="sortPrice" onchange="handleSortChange()" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                        <option value="id-desc">Mới nhất</option>
+                        <option value="price-asc">Giá: Thấp đến Cao</option>
+                        <option value="price-desc">Giá: Cao đến Thấp</option>
+                    </select>
+                </div>
             </div>
         </section>
 

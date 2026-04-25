@@ -377,6 +377,16 @@ function updateUIByAuthStatus() {
     }
 }
 
+// Hàm xử lý khi người dùng thay đổi lựa chọn sắp xếp
+function handleSortChange() {
+    const sortValue = document.getElementById("sortPrice").value;
+    // split giá trị từ "price-asc" thành ["price", "asc"]
+    const [sortBy, sortDir] = sortValue.split("-");
+
+    // Gọi hàm sort có sẵn trong index.js của bạn
+    sortProducts(sortBy, sortDir);
+}
+
 function handleLogout() {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
