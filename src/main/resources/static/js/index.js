@@ -37,22 +37,17 @@ function bindSearchEvents() {
 
 function performSearch() {
     const searchInput = document.getElementById("searchInput");
-    const keyword = searchInput ? searchInput.value.trim() : '';
+    currentKeyword = searchInput ? searchInput.value.trim() : '';
 
-    if (keyword !== '') {
-        // THAY ĐỔI: Không nhảy trang nữa mà gán biến và load tại chỗ
-        currentKeyword = keyword;
-        currentCategoryId = ''; // Xóa lọc danh mục nếu đang tìm theo tên
-        currentPage = 0;        // Quay về trang đầu
+    if (currentKeyword !== '') {
+        currentCategoryId = '';
+        currentPage = 0;
 
-        // Reset lại màu các nút danh mục về nút "Tất cả"
+        // Cập nhật tiêu đề khi tìm kiếm
+        $('#category-title').text(`Kết quả tìm kiếm cho: "${currentKeyword}"`);
+
         $('.btn-danh-muc').removeClass('active');
         $('.btn-danh-muc').first().addClass('active');
-
-        loadProducts();
-    } else {
-        // Nếu xóa trắng ô tìm kiếm thì load lại tất cả
-        currentKeyword = '';
         loadProducts();
     }
 }
@@ -136,11 +131,15 @@ function renderCategories(categories) {
     container.empty();
 
     let html = '<div class="danh-muc">';
-    html += `<button class="btn-danh-muc active" onclick="loadProducts()">Tất cả sản phẩm</button>`;
+    // Sửa chỗ này: Thêm tham số tên "Tất cả sản phẩm"
+    const allActive = (currentCategoryId === '') ? 'active' : '';
+    html += `<button class="btn-danh-muc ${allActive}" onclick="loadProductsByCategory('', 'Tất cả sản phẩm')">Tất cả sản phẩm</button>`;
 
     categories.forEach(c => {
         if (c.status === 1) {
-            html += `<button class="btn-danh-muc" onclick="loadProductsByCategory(${c.id})">${c.name}</button>`;
+            const isActive = (currentCategoryId == c.id) ? 'active' : '';
+            // Sửa chỗ này: Truyền thêm c.name vào hàm
+            html += `<button class="btn-danh-muc ${isActive}" onclick="loadProductsByCategory(${c.id}, '${c.name}')">${c.name}</button>`;
         }
     });
 
@@ -149,14 +148,33 @@ function renderCategories(categories) {
 }
 
 // Thay vì nhảy trang, chúng ta gọi thẳng API lấy sản phẩm theo danh mục
-function loadProductsByCategory(categoryId) {
-    // Chỉ cần gán biến và reset các biến khác
+// Thêm tham số categoryName vào đây
+function loadProductsByCategory(categoryId, categoryName) {
     currentCategoryId = categoryId;
     currentKeyword = '';
     $('#searchInput').val('');
     currentPage = 0;
 
-    loadProducts(); // Gọi hàm tổng ở trên
+    // CẬP NHẬT TIÊU ĐỀ Ở ĐÂY
+    if (categoryName) {
+        $('#category-title').text(categoryName);
+    } else if (categoryId === '') {
+        $('#category-title').text('Tất cả sản phẩm');
+    }
+
+    // Phần highlight nút cũ giữ nguyên
+    $('.btn-danh-muc').removeClass('active');
+    if (categoryId === '') {
+        $('.btn-danh-muc').first().addClass('active');
+    } else {
+        $(`.btn-danh-muc[onclick*="loadProductsByCategory(${categoryId}"]`).addClass('active');
+    }
+
+    loadProducts();
+}
+
+function loadAllProducts() {
+    loadProductsByCategory(''); // Truyền rỗng để lấy tất cả
 }
 
 function renderProducts(products) {
