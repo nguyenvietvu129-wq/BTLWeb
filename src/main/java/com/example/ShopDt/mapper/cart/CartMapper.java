@@ -14,6 +14,7 @@ public interface CartMapper {
     @Mapping(source = "product.id", target = "productId")
     @Mapping(source = "product.name", target = "productName")
     @Mapping(source = "product.price", target = "price")
+    @Mapping(source = "product.image", target = "image")
     CartResponse toResponse(Cart cart);
 
     // DTO -> Entity

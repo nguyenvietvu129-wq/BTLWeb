@@ -5,6 +5,8 @@ let totalPages = 0;
 let totalElements = 0;
 let currentSortBy = 'id';
 let currentSortDir = 'desc';
+let currentKeyword = '';
+let currentCategoryId = '';
 
 $(document).ready(function () {
     bindTopActions();
@@ -38,10 +40,20 @@ function performSearch() {
     const keyword = searchInput ? searchInput.value.trim() : '';
 
     if (keyword !== '') {
-        // Chuyển sang trang search với từ khóa
-        window.location.href = `/search?keyword=${encodeURIComponent(keyword)}`;
+        // THAY ĐỔI: Không nhảy trang nữa mà gán biến và load tại chỗ
+        currentKeyword = keyword;
+        currentCategoryId = ''; // Xóa lọc danh mục nếu đang tìm theo tên
+        currentPage = 0;        // Quay về trang đầu
+
+        // Reset lại màu các nút danh mục về nút "Tất cả"
+        $('.btn-danh-muc').removeClass('active');
+        $('.btn-danh-muc').first().addClass('active');
+
+        loadProducts();
     } else {
-        alert("Vui lòng nhập từ khóa tìm kiếm!");
+        // Nếu xóa trắng ô tìm kiếm thì load lại tất cả
+        currentKeyword = '';
+        loadProducts();
     }
 }
 
@@ -49,24 +61,40 @@ function performSearch() {
 function loadProducts() {
     $("#ds-san-pham").html('<div class="loading">Đang tải sản phẩm...</div>');
 
-    // Sử dụng API /api/products/all thay vì /search
-    let url = `/api/products/all?page=${currentPage}&size=${pageSize}&sortBy=${currentSortBy}&sortDir=${currentSortDir}`;
+    // NÂNG CẤP: Dùng API /search để vừa load tất cả, vừa load theo tên/loại được luôn
+    let url = `/api/products/search?page=${currentPage}&size=${pageSize}`;
 
-    console.log('Loading all products from /all:', url);
+    // Nếu có từ khóa thì ghép thêm vào URL
+    if (currentKeyword !== '') {
+        url += `&keyword=${encodeURIComponent(currentKeyword)}`;
+    }
+
+    // Nếu có danh mục thì ghép thêm vào URL (áp dụng cho hàm loadProductsByCategory bên dưới)
+    if (currentCategoryId !== '') {
+        url += `&listCategoryId=${currentCategoryId}`;
+    }
+
+    // Ghép thêm sắp xếp
+    if (currentSortBy && currentSortDir) {
+        url += `&sort=${currentSortBy},${currentSortDir}`;
+    }
 
     $.ajax({
         url: url,
         method: "GET",
         dataType: "json",
         success: function (response) {
-            if (response.success && response.data) {
+            if (response.success && response.data && response.data.content) {
                 totalPages = response.data.totalPages;
                 totalElements = response.data.totalElements;
-                renderProducts(response.data.content || []);
+                renderProducts(response.data.content);
                 renderPagination();
                 updateTotalItems();
             } else {
-                renderProducts([]);
+                // Nếu không có sản phẩm nào
+                $("#ds-san-pham").html('<div class="empty-state">Không tìm thấy sản phẩm phù hợp.</div>');
+                $("#total-items").text("(0 sản phẩm)");
+                $("#phan-trang").empty();
             }
         },
         error: function (xhr, status, error) {
@@ -122,39 +150,13 @@ function renderCategories(categories) {
 
 // Thay vì nhảy trang, chúng ta gọi thẳng API lấy sản phẩm theo danh mục
 function loadProductsByCategory(categoryId) {
-    $("#ds-san-pham").html('<div class="loading">Đang tải sản phẩm theo danh mục...</div>');
+    // Chỉ cần gán biến và reset các biến khác
+    currentCategoryId = categoryId;
+    currentKeyword = '';
+    $('#searchInput').val('');
+    currentPage = 0;
 
-    // Chú ý: Backend (ProductController) của bạn cần có API hỗ trợ tìm theo categoryId
-    let url = `/api/products/search?categoryId=${categoryId}&page=0&size=${pageSize}`;
-
-    $.ajax({
-        url: url,
-        method: "GET",
-        dataType: "json",
-        success: function (response) {
-            if (response.success && response.data) {
-                // Cập nhật lại biến phân trang
-                totalPages = response.data.totalPages;
-                totalElements = response.data.totalElements;
-                currentPage = 0;
-
-                // Vẽ lại danh sách sản phẩm mới
-                renderProducts(response.data.content || []);
-                renderPagination();
-                updateTotalItems();
-
-                // Đổi màu nút danh mục đang được chọn (Tùy chọn cho giao diện đẹp hơn)
-                $('.btn-danh-muc').removeClass('active');
-                $(`.btn-danh-muc[onclick="loadProductsByCategory(${categoryId})"]`).addClass('active');
-            } else {
-                renderProducts([]);
-            }
-        },
-        error: function (xhr, status, error) {
-            console.log("Lỗi tải sản phẩm theo danh mục:", error);
-            renderProducts([]);
-        }
-    });
+    loadProducts(); // Gọi hàm tổng ở trên
 }
 
 function renderProducts(products) {
