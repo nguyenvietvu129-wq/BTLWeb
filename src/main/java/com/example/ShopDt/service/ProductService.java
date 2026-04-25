@@ -161,6 +161,34 @@ public class ProductService {
         return productMapper.toResponse(productRepository.save(product));
     }
 
+    // Thêm hàm lấy sản phẩm theo danh mục
+    // Thêm hàm lấy sản phẩm theo danh mục
+    public PaginatedResponse<ProductResponse> findByCategoryIdPaginated(Long categoryId, int page, int size) {
+        // Tạo đối tượng phân trang
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Lấy dữ liệu từ DB
+        Page<Product> productPage = productRepository.findByCategoryId(categoryId, pageable);
+
+        // ĐÃ SỬA: Dùng productMapper::toResponse
+        List<ProductResponse> content = productPage.getContent().stream()
+                .map(productMapper::toResponse)
+                .toList();
+
+        // ĐÃ SỬA: Đóng gói chuẩn theo thuộc tính của PaginatedResponse.java
+        return PaginatedResponse.<ProductResponse>builder()
+                .content(content)
+                .page(productPage.getNumber())           // Sửa thành page
+                .size(productPage.getSize())             // Sửa thành size
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .first(productPage.isFirst())            // Thêm các thuộc tính cờ
+                .last(productPage.isLast())
+                .hasNext(productPage.hasNext())
+                .hasPrevious(productPage.hasPrevious())
+                .build();
+    }
+
     public void delete(long id){
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));

@@ -28,4 +28,7 @@ public interface ProductRepository extends JpaRepository<Product,Long> {
             @Param("maxPrice") Double maxPrice,
             Pageable pageable);
 
+    // Đã sửa lại cú pháp JOIN để truy cập vào category.id
+    @Query("SELECT p FROM Product p JOIN p.productCategories pc WHERE pc.category.id = :categoryId")
+    Page<Product> findByCategoryId(@Param("categoryId") Long categoryId, Pageable pageable);
 }
