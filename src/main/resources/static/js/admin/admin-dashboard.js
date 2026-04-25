@@ -52,9 +52,6 @@ function bindEvents() {
             loadAllOrders(); // Gọi hàm load đơn hàng
         } else if (page === 'revenue') {
             $('#revenue-content').show();
-        } else if (page === 'top-products') {
-            $('#top-products-content').show();
-            loadTopProducts();
         }
     });
 
