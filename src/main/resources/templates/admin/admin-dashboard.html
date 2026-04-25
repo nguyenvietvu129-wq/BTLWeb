@@ -124,7 +124,13 @@
 
         <div id="users-content" class="content-area" style="display: none;">
             <div class="top-products-section">
-                <h2>Quản lý danh sách người dùng</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Quản lý danh sách người dùng</h2>
+                    <button onclick="openAddUserModal()" style="background: #2ecc71; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        + Thêm Người Dùng
+                    </button>
+                </div>
+
                 <div class="table-container">
                     <table class="products-table">
                         <thead>
@@ -143,12 +149,51 @@
             </div>
         </div>
         <div id="products-content" class="content-area" style="display: none;">
-            <h2>Quản lý sản phẩm</h2>
-            <p>Đang phát triển...</p>
+            <div class="top-products-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Quản lý sản phẩm</h2>
+                    <button onclick="openAddModal()" class="logout-btn" style="width: auto; background: #2ecc71; padding: 10px 20px;">+ Thêm sản phẩm mới</button>
+                </div>
+                <div class="table-container">
+                    <table class="products-table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Hình ảnh</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Giá</th>
+                            <th>Số lượng</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody id="products-list-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
+
         <div id="orders-content" class="content-area" style="display: none;">
-            <h2>Quản lý đơn hàng</h2>
-            <p>Đang phát triển...</p>
+            <div class="top-products-section">
+                <h2>Quản lý đơn hàng</h2>
+                <div class="table-container">
+                    <table class="products-table">
+                        <thead>
+                        <tr>
+                            <th>Mã ĐH</th>
+                            <th>Khách hàng</th>
+                            <th>Ngày đặt</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody id="orders-list-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
         <div id="revenue-content" class="content-area" style="display: none;">
             <h2>Thống kê doanh thu</h2>
@@ -157,6 +202,116 @@
         <div id="top-products-content" class="content-area" style="display: none;">
             <h2>Sản phẩm bán chạy</h2>
             <p>Đang phát triển...</p>
+        </div>
+
+        <div id="editUserModal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;">
+            <div style="background: #fff; padding: 20px; border-radius: 8px; width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                <h3 id="modal-title" style="margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">Thêm/Sửa Người Dùng</h3>
+
+                <input type="hidden" id="edit-user-id">
+
+                <div id="group-username" style="margin-bottom: 10px;">
+                    <label style="font-weight: bold;">Tên đăng nhập:</label><br>
+                    <input type="text" id="edit-user-username" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-top: 5px;">
+                </div>
+
+                <div id="group-password" style="margin-bottom: 10px;">
+                    <label style="font-weight: bold;">Mật khẩu:</label><br>
+                    <input type="password" id="edit-user-password" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-top: 5px;">
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                    <label style="font-weight: bold;">Email:</label><br>
+                    <input type="email" id="edit-user-email" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-top: 5px;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="font-weight: bold;">Vai trò:</label><br>
+                    <select id="edit-user-role" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-top: 5px;">
+                        <option value="1">ADMIN</option>
+                        <option value="2">CUSTOMER</option>
+                    </select>
+                </div>
+
+                <div style="text-align: right;">
+                    <button onclick="closeUserModal()" style="padding: 8px 15px; border: none; background: #95a5a6; color: white; border-radius: 4px; cursor: pointer;">Hủy</button>
+                    <button onclick="submitUser()" style="padding: 8px 15px; border: none; background: #3498db; color: white; border-radius: 4px; cursor: pointer; margin-left: 10px;">Lưu Thông Tin</button>
+                </div>
+            </div>
+        </div>
+        <div id="editProductModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+            <div style="background:white; padding:20px; border-radius:8px; width:450px; max-width:90%; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                <h2 style="margin-bottom: 20px; color: #2c3e50;">Sửa Sản Phẩm</h2>
+                <input type="hidden" id="edit-prod-id">
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Tên sản phẩm:</label>
+                    <input type="text" id="edit-prod-name" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                </div>
+
+                <div style="display:flex; gap:15px; margin-bottom: 15px;">
+                    <div style="flex:1;">
+                        <label style="display:block; margin-bottom:5px; font-weight:bold;">Giá (VND):</label>
+                        <input type="number" id="edit-prod-price" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="display:block; margin-bottom:5px; font-weight:bold;">Số lượng:</label>
+                        <input type="number" id="edit-prod-quantity" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Mô tả:</label>
+                    <textarea id="edit-prod-desc" rows="3" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;"></textarea>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Link hình ảnh (URL):</label>
+                    <input type="text" id="edit-prod-image" placeholder="https://vd: link-anh-cua-ban.jpg" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                </div>
+
+                <div style="text-align:right;">
+                    <button onclick="$('#editProductModal').hide()" style="padding:10px 15px; border:none; border-radius:4px; cursor:pointer; margin-right:10px; background:#e74c3c; color:white;">Hủy</button>
+                    <button onclick="submitEditProduct()" style="padding:10px 15px; border:none; border-radius:4px; cursor:pointer; background:#2ecc71; color:white; font-weight:bold;">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="addProductModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+            <div style="background:white; padding:20px; border-radius:8px; width:450px; max-width:90%; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                <h2 style="margin-bottom: 20px; color: #2c3e50;">Thêm Sản Phẩm Mới</h2>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Tên sản phẩm:</label>
+                    <input type="text" id="add-prod-name" placeholder="Nhập tên sản phẩm..." style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                </div>
+
+                <div style="display:flex; gap:15px; margin-bottom: 15px;">
+                    <div style="flex:1;">
+                        <label style="display:block; margin-bottom:5px; font-weight:bold;">Giá (VND):</label>
+                        <input type="number" id="add-prod-price" placeholder="Ví dụ: 150000" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="display:block; margin-bottom:5px; font-weight:bold;">Số lượng:</label>
+                        <input type="number" id="add-prod-quantity" placeholder="Ví dụ: 100" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Mô tả:</label>
+                    <textarea id="add-prod-desc" rows="3" placeholder="Nhập mô tả sản phẩm..." style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;"></textarea>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Link hình ảnh (URL):</label>
+                    <input type="text" id="add-prod-image" placeholder="https://vd: link-anh-cua-ban.jpg" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                </div>
+
+                <div style="text-align:right;">
+                    <button onclick="$('#addProductModal').hide()" style="padding:10px 15px; border:none; border-radius:4px; cursor:pointer; margin-right:10px; background:#e74c3c; color:white;">Hủy</button>
+                    <button onclick="submitAddProduct()" style="padding:10px 15px; border:none; border-radius:4px; cursor:pointer; background:#2ecc71; color:white; font-weight:bold;">Thêm sản phẩm</button>
+                </div>
+            </div>
         </div>
     </main>
 </div>

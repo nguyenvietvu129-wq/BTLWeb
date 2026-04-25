@@ -102,7 +102,7 @@ public class ProductController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ProductResponse addProduct(@RequestBody ProductRequest request){
-        return productService.create(request);
+        return  productService.create(request);
     }
 
     @PutMapping("/{id}")
