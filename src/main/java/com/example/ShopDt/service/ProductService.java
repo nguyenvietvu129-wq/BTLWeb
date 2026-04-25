@@ -145,8 +145,19 @@ public class ProductService {
     public ProductResponse update(long id, ProductRequest productRequest) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
-        // Chỉ cập nhật số lượng sản phẩm
+
+        // Đã xóa phần chỉ cập nhật số lượng, thay bằng cập nhật toàn bộ:
+        product.setName(productRequest.getName());
+        product.setPrice(productRequest.getPrice());
         product.setQuantity(productRequest.getQuantity());
+        product.setDescription(productRequest.getDescription());
+        product.setStatus(productRequest.getStatus());
+
+        // Nếu có gửi link ảnh mới thì cập nhật, không thì giữ nguyên ảnh cũ
+        if (productRequest.getImage() != null && !productRequest.getImage().isEmpty()) {
+            product.setImage(productRequest.getImage());
+        }
+
         return productMapper.toResponse(productRepository.save(product));
     }
 

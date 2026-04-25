@@ -96,10 +96,55 @@ public class UserService {
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
-@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getUsers() {
         log.info("In method get Users");
         return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
     }
+
+    // Thêm User từ Admin
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponse adminCreateUser(String username, String email, String password, Long roleId) {
+        if (userRepository.findByUsername(username).isPresent()) {
+            throw new RuntimeException("Tên đăng nhập đã tồn tại");
+        }
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("Email đã tồn tại");
+        }
+
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setStatus(1); // 1 = Hoạt động
+        user.setCreateAt(java.time.LocalDateTime.now());
+
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Quyền không tồn tại"));
+        user.setRole(role);
+
+        return userMapper.toUserResponse(userRepository.save(user));
+    }
+
+    // Sửa Email và Quyền User từ Admin
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponse adminUpdateUser(Long id, String email, Long roleId) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        // Kiểm tra xem email mới có bị trùng với user khác không
+        if (!user.getEmail().equals(email) && userRepository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("Email đã được sử dụng bởi tài khoản khác");
+        }
+
+        user.setEmail(email);
+
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Quyền không tồn tại"));
+        user.setRole(role);
+
+        return userMapper.toUserResponse(userRepository.save(user));
+    }
+
 
 }

@@ -12,9 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -74,4 +72,50 @@ public class AdminController {
                     .build();
         }
     }
+
+    // API Thêm người dùng
+    @PostMapping("/users")
+    @ResponseBody
+    public ApiResponse<UserResponse> addUser(
+            @RequestParam String username,
+            @RequestParam String email,
+            @RequestParam String password,
+            @RequestParam Long roleId) {
+        try {
+            UserResponse user = userService.adminCreateUser(username, email, password, roleId);
+            return ApiResponse.<UserResponse>builder()
+                    .success(true)
+                    .message("Thêm người dùng thành công")
+                    .data(user)
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.<UserResponse>builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .build();
+        }
+    }
+
+    // API Sửa người dùng
+    @PutMapping("/users/{id}")
+    @ResponseBody
+    public ApiResponse<UserResponse> editUser(
+            @PathVariable Long id,
+            @RequestParam String email,
+            @RequestParam Long roleId) {
+        try {
+            UserResponse user = userService.adminUpdateUser(id, email, roleId);
+            return ApiResponse.<UserResponse>builder()
+                    .success(true)
+                    .message("Cập nhật thành công")
+                    .data(user)
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.<UserResponse>builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .build();
+        }
+    }
+
 }

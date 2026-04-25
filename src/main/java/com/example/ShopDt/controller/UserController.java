@@ -39,38 +39,6 @@ public class UserController {
         }
     }
 
-    @GetMapping()
-    @Operation(summary = "Lấy danh sách người dùng", description = "Trả về danh sách toàn bộ người dùng trong hệ thống.")
-
-    public ApiResponse<List<UserResponse>> getUsers() {
-        try {
-            List<UserResponse> users = userService.getUsers();
-
-            if (users == null || users.isEmpty()) {
-                return ApiResponse.<List<UserResponse>>builder()
-                        .success(true)
-                        .message("Không có người dùng nào trong hệ thống.")
-                        .data(List.of()) // Trả về mảng rỗng thay vì null
-                        .build();
-            }
-
-            return ApiResponse.<List<UserResponse>>builder()
-                    .success(true)
-                    .message("Lấy danh sách người dùng thành công.")
-                    .data(users)
-                    .build();
-
-        } catch (Exception e) {
-            return ApiResponse.<List<UserResponse>>builder()
-                    .success(false)
-                    .message("Không thể lấy danh sách người dùng.")
-                    .error(e.getMessage())
-                    .data(List.of())
-                    .build();
-        }
-
-
-    }
     @GetMapping("/profile")
     public ApiResponse<UserResponse> getProfile(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
