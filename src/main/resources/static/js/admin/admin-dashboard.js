@@ -555,6 +555,16 @@ function loadAllOrders() {
                 tbody.empty();
                 const orders = response.data;
 
+                const sortType = $('#sort-order-price').val();
+                if (sortType === 'asc') {
+                    orders.sort((a, b) => a.totalPrice - b.totalPrice); // Thấp đến Cao
+                } else if (sortType === 'desc') {
+                    orders.sort((a, b) => b.totalPrice - a.totalPrice); // Cao đến Thấ
+                } else {
+                    // Mặc định: Mới nhất lên đầu (Dựa vào ID hoặc ngày tháng)
+                    orders.sort((a, b) => b.id - a.id);
+                }
+
                 if(orders.length === 0) {
                     tbody.html('<tr><td colspan="6" class="loading-text">Chưa có đơn hàng nào</td></tr>');
                     return;
@@ -578,7 +588,7 @@ function loadAllOrders() {
                             <td>${formatCurrency(order.totalPrice)}</td>
                             <td>${statusText}</td>
                             <td>
-                                <button class="logout-btn" style="background:#3498db; padding:5px 10px; font-size:12px; display:inline-block; width:auto;">Chi tiết</button>
+                                <button onclick="viewOrderDetail(${order.id})" class="logout-btn" style="background:#3498db; padding:5px 10px; font-size:12px; display:inline-block; width:auto; cursor: pointer;">Chi tiết</button>
                             </td>
                         </tr>
                     `);
@@ -589,6 +599,71 @@ function loadAllOrders() {
             showError('Không thể tải danh sách đơn hàng. Bạn có quyền Admin chưa?');
         }
     });
+}
+
+// ================= HÀM XEM CHI TIẾT ĐƠN HÀNG =================
+function viewOrderDetail(orderId) {
+    const token = localStorage.getItem('token');
+    $('#detail-order-items').html('<tr><td colspan="4" style="text-align:center;">Đang tải dữ liệu...</td></tr>');
+    $('#orderDetailModal').css('display', 'flex'); // Mở modal ngay lập tức
+
+    $.ajax({
+        url: '/api/orders/admin/' + orderId, // Gọi API lấy chi tiết của Admin
+        method: 'GET',
+        headers: { 'Authorization': 'Bearer ' + token },
+        success: function(response) {
+            if (response.success && response.data) {
+                const order = response.data;
+
+                // Đổ thông tin chung
+                $('#detail-order-id').text('#' + order.id);
+                $('#detail-order-customer').text(order.userName || 'N/A');
+
+                const dateObj = new Date(order.createdAt);
+                $('#detail-order-date').text(dateObj.toLocaleDateString('vi-VN') + ' ' + dateObj.toLocaleTimeString('vi-VN'));
+
+                let statusText = order.status === 1
+                    ? '<span style="color:#27ae60; font-weight:bold;">Hoàn thành</span>'
+                    : '<span style="color:#f39c12; font-weight:bold;">Chờ xử lý</span>';
+                $('#detail-order-status').html(statusText);
+                $('#detail-order-note').text(order.note || 'Không có ghi chú');
+                $('#detail-order-total').text(formatCurrency(order.totalPrice));
+
+                // Đổ danh sách sản phẩm
+                const tbody = $('#detail-order-items');
+                tbody.empty();
+
+                // Lưu ý: Nếu DTO OrderResponse của bạn trả về danh sách "orderDetails", nó sẽ loop ở đây
+                if (order.orderDetails && order.orderDetails.length > 0) {
+                    order.orderDetails.forEach(item => {
+                        // Tính đơn giá = Thành tiền / Số lượng (Do DB hiện tại lưu price tổng)
+                        const unitPrice = item.price / item.quantity;
+                        tbody.append(`
+                            <tr>
+                                <td>${escapeHtml(item.productName || 'Sản phẩm ' + item.productId)}</td>
+                                <td>${formatCurrency(unitPrice)}</td>
+                                <td style="text-align: center;">${item.quantity}</td>
+                                <td><strong>${formatCurrency(item.price)}</strong></td>
+                            </tr>
+                        `);
+                    });
+                } else {
+                    tbody.html('<tr><td colspan="4" style="text-align:center;">Không có chi tiết sản phẩm hoặc cấu hình DTO chưa map chi tiết.</td></tr>');
+                }
+            } else {
+                alert('Lỗi: ' + response.message);
+                closeOrderDetailModal();
+            }
+        },
+        error: function(xhr) {
+            alert('Không thể kết nối đến server để lấy chi tiết');
+            closeOrderDetailModal();
+        }
+    });
+}
+
+function closeOrderDetailModal() {
+    $('#orderDetailModal').hide();
 }
 
 function handleLogout() {

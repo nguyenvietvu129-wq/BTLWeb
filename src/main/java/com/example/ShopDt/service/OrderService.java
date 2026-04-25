@@ -97,4 +97,12 @@ public class OrderService {
                 .map(orderMapper::toOrderResponse)
                 .toList();
     }
+
+    // Thêm hàm này dành riêng cho Admin lấy chi tiết đơn hàng
+    public OrderResponse getOrderByIdForAdmin(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+
+        return orderMapper.toOrderResponse(order);
+    }
 }
