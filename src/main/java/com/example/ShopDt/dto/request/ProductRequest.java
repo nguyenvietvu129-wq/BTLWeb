@@ -14,4 +14,5 @@ public class ProductRequest {
     private String image;
     private String description;
     private int status;
+    private Long categoryId;
 }

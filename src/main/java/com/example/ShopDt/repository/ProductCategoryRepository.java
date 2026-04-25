@@ -9,5 +9,7 @@ import java.util.List;
 public interface ProductCategoryRepository extends JpaRepository<ProductCategory, Long> {
     List<ProductCategory> findByCategoryId(Long categoryId);
 
+    // Thêm dòng này để xóa các danh mục cũ của 1 sản phẩm
+    void deleteByProductId(Long productId);
 }
 

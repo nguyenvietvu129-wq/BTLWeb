@@ -89,15 +89,6 @@ function loadStatistics() {
     });
 }
 
-function displayStatistics(data) {
-    // Format currency
-    const formattedRevenue = formatCurrency(data.totalRevenue);
-
-    $('#total-revenue').text(formattedRevenue);
-    $('#total-orders').text(formatNumber(data.totalOrders));
-    $('#total-users').text(formatNumber(data.totalUsers));
-    $('#total-products').text(formatNumber(data.totalProducts));
-}
 
 function loadTopProducts() {
     const token = localStorage.getItem('token');
@@ -353,23 +344,34 @@ function loadAllProducts() {
                 }
 
                 currentAdminProducts.forEach(product => {
-                    const statusHtml = product.quantity > 0
-                        ? '<span style="color:#27ae60; font-weight:bold;">Còn hàng</span>'
-                        : '<span style="color:#e74c3c; font-weight:bold;">Hết hàng</span>';
+                    // 1. Xử lý hiển thị danh mục (Nối tên các danh mục nếu có nhiều)
+                    let categoryName = 'Chưa phân loại';
+                    if (product.category && product.category.length > 0) {
+                        // Lấy danh sách tên danh mục và nối lại bằng dấu phẩy
+                        categoryName = product.category.map(c => c.name).join(', ');
+                    }
 
+                    // 2. Xử lý hiển thị Trạng thái (Dựa trên trường status trong DB)
+                    // Giả sử: 1 là Đang bán, 0 là Tạm ẩn
+                    const statusHtml = product.status === 1
+                        ? '<span class="badge-success" style="color:#27ae60; font-weight:bold;">Đang bán</span>'
+                        : '<span class="badge-danger" style="color:#e74c3c; font-weight:bold;">Nghỉ bán</span>';
+
+                    // 3. Render hàng (row) mới
                     tbody.append(`
                         <tr>
                             <td>${product.id}</td>
                             <td>
-                                <img src="${product.image || '/images/default-product.png'}" class="product-image" onerror="this.src='/images/default-product.png'">
+                                <img src="${product.image || '/images/default-product.png'}" 
+                                     class="product-image" 
+                                     onerror="this.src='/images/default-product.png'">
                             </td>
                             <td><strong>${escapeHtml(product.name)}</strong></td>
-                            <td>${formatCurrency(product.price)}</td>
+                            <td><span class="category-tag">${escapeHtml(categoryName)}</span></td> <td>${formatCurrency(product.price)}</td>
                             <td>${product.quantity}</td>
-                            <td>${statusHtml}</td>
-                            <td>
-                                <button onclick="openEditModal(${product.id})" class="logout-btn" style="background:#f39c12; padding:5px 10px; font-size:12px; display:inline-block; width:auto; margin-right:5px;">Sửa</button>
-                                <button onclick="deleteProduct(${product.id})" class="logout-btn" style="background:#e74c3c; padding:5px 10px; font-size:12px; display:inline-block; width:auto;">Xóa</button>
+                            <td>${statusHtml}</td> <td>
+                                <button onclick="openEditModal(${product.id})" class="logout-btn" style="background:#f39c12; padding:5px 10px; font-size:12px; width:auto; margin-right:5px;">Sửa</button>
+                                <button onclick="deleteProduct(${product.id})" class="logout-btn" style="background:#e74c3c; padding:5px 10px; font-size:12px; width:auto;">Xóa</button>
                             </td>
                         </tr>
                     `);
@@ -404,74 +406,91 @@ function deleteProduct(id) {
     }
 }
 
+// Hàm tải danh sách danh mục từ Server
+function loadCategoriesForSelect() {
+    $.ajax({
+        url: '/api/category', // API lấy tất cả danh mục
+        method: 'GET',
+        success: function(response) {
+            if (response.success && response.data) {
+                let options = '<option value="">-- Chọn danh mục --</option>';
+                response.data.forEach(cat => {
+                    options += `<option value="${cat.id}">${cat.name}</option>`;
+                });
+                // Đổ dữ liệu vào cả 2 select ở modal Thêm và Sửa
+                $('#add-prod-category, #edit-prod-category').html(options);
+            }
+        },
+        error: function() {
+            console.error("Không thể tải danh mục");
+        }
+    });
+}
+
+// Gọi hàm này ngay khi trang load xong
+$(document).ready(function() {
+    checkAuthAndLoad();
+    bindEvents();
+    loadCategoriesForSelect(); // Thêm dòng này
+});
+
 // ================= HÀM SỬA SẢN PHẨM =================
 // ================= HÀM MỞ FORM SỬA SẢN PHẨM =================
 function openEditModal(id) {
-    // Tìm sản phẩm trong mảng đã lưu
     const product = currentAdminProducts.find(p => p.id === id);
     if (!product) return;
 
-    // Đổ dữ liệu cũ vào các ô input
     $('#edit-prod-id').val(product.id);
     $('#edit-prod-name').val(product.name);
     $('#edit-prod-price').val(product.price);
     $('#edit-prod-quantity').val(product.quantity);
     $('#edit-prod-desc').val(product.description || '');
-    // Đổ dữ liệu cũ vào các ô input (thêm dòng dưới này vào)
     $('#edit-prod-image').val(product.image || '');
 
-    // Hiển thị Popup (flex để căn giữa)
+    // Gán giá trị Status hiện tại
+    $('#edit-prod-status').val(product.status);
+
+    // Tìm và gán CategoryId (Nếu ProductResponse của bạn có chứa list categories)
+    if (product.categories && product.categories.length > 0) {
+        $('#edit-prod-category').val(product.categories[0].id);
+    }
+
     $('#editProductModal').css('display', 'flex');
 }
 
 // ================= HÀM GỬI API CẬP NHẬT =================
 function submitEditProduct() {
     const id = $('#edit-prod-id').val();
-    const name = $('#edit-prod-name').val();
-    const price = $('#edit-prod-price').val();
-    const quantity = $('#edit-prod-quantity').val();
-    const desc = $('#edit-prod-desc').val();
     const token = localStorage.getItem('token');
-    // Thêm biến hứng ảnh
-    const image = $('#edit-prod-image').val().trim();
 
-
-    // Tạo Body theo cấu trúc ProductRequest
     const payload = {
-        name: name,
-        price: parseFloat(price),
-        quantity: parseInt(quantity),
-        description: desc,
-        image: image,
-        status: 1 // Giữ mặc định là đang bán
+        name: $('#edit-prod-name').val(),
+        price: parseFloat($('#edit-prod-price').val()),
+        quantity: parseInt($('#edit-prod-quantity').val()),
+        description: $('#edit-prod-desc').val(),
+        image: $('#edit-prod-image').val(),
+        status: parseInt($('#edit-prod-status').val()), // Quan trọng: Lấy từ select
+        categoryId: $('#edit-prod-category').val()    // Quan trọng: Lấy từ select
     };
-
-    // Đổi chữ nút thành Đang lưu để UX tốt hơn
-    const btnLuu = $('#editProductModal button:last-child');
-    btnLuu.text('Đang lưu...').prop('disabled', true);
 
     $.ajax({
         url: '/api/products/' + id,
         method: 'PUT',
         headers: {
             'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json' // Phải khai báo JSON
+            'Content-Type': 'application/json'
         },
         data: JSON.stringify(payload),
         success: function(response) {
-            alert('Cập nhật sản phẩm thành công!');
+            alert('Cập nhật thành công!');
             $('#editProductModal').hide();
-            btnLuu.text('Lưu thay đổi').prop('disabled', false);
-            loadAllProducts(); // Load lại bảng sản phẩm mới
+            loadAllProducts();
         },
         error: function(xhr) {
-            console.error(xhr);
-            alert('Lỗi khi cập nhật sản phẩm! Vui lòng kiểm tra lại quyền truy cập.');
-            btnLuu.text('Lưu thay đổi').prop('disabled', false);
+            alert('Lỗi: ' + xhr.responseText);
         }
     });
 }
-
 // ================= HÀM MỞ FORM THÊM SẢN PHẨM =================
 function openAddModal() {
     // Xóa sạch các ô input cũ trước khi mở form mới
@@ -501,12 +520,13 @@ function submitAddProduct() {
 
     // Tạo Body theo cấu trúc ProductRequest
     const payload = {
-        name: name,
-        price: parseFloat(price),
-        quantity: parseInt(quantity),
-        description: desc,
-        image: image,
-        status: 1 // Mặc định là đang bán
+        name: $('#add-prod-name').val(),
+        price: parseFloat($('#add-prod-price').val()),
+        quantity: parseInt($('#add-prod-quantity').val()),
+        description: $('#add-prod-desc').val(),
+        image: $('#add-prod-image').val(),
+        status: parseInt($('#add-prod-status').val()), // Lấy status từ select
+        categoryId: $('#add-prod-category').val()    // Lấy categoryId
     };
 
     // Đổi chữ trên nút để báo hiệu đang xử lý

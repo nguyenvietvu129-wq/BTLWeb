@@ -4,8 +4,12 @@ import com.example.ShopDt.dto.request.ProductRequest;
 import com.example.ShopDt.dto.request.ProductSearchRequest;
 import com.example.ShopDt.dto.response.PaginatedResponse;
 import com.example.ShopDt.dto.response.ProductResponse;
+import com.example.ShopDt.entity.Category;
 import com.example.ShopDt.entity.Product;
+import com.example.ShopDt.entity.ProductCategory;
 import com.example.ShopDt.mapper.product.ProductMapper;
+import com.example.ShopDt.repository.CategoryRepository;
+import com.example.ShopDt.repository.ProductCategoryRepository;
 import com.example.ShopDt.repository.ProductRepository;
 import com.example.ShopDt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +18,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.stream.Collectors;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +29,8 @@ import java.util.List;
 public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
+    private final ProductCategoryRepository productCategoryRepository;
+    private final CategoryRepository categoryRepository;
 
     public List<ProductResponse> findAll() {
         return productRepository.findAll()
@@ -132,27 +140,53 @@ public class ProductService {
         return productMapper.toResponse(product);
     }
 
+    @Transactional
     public ProductResponse create(ProductRequest productRequest) {
         Product product = productMapper.toEntity(productRequest);
-        return productMapper.toResponse(productRepository.save(product));
+        product = productRepository.save(product);
+
+        // Lưu category nếu có
+        if (productRequest.getCategoryId() != null) {
+            Category category = categoryRepository.findById(productRequest.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Category not found"));
+            ProductCategory pc = new ProductCategory();
+            pc.setProduct(product);
+            pc.setCategory(category);
+            productCategoryRepository.save(pc); //
+        }
+        return productMapper.toResponse(product);
     }
-    public ProductResponse update(long id, ProductRequest productRequest) {
+    @Transactional
+    public ProductResponse update(Long id, ProductRequest request) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
 
-        // Đã xóa phần chỉ cập nhật số lượng, thay bằng cập nhật toàn bộ:
-        product.setName(productRequest.getName());
-        product.setPrice(productRequest.getPrice());
-        product.setQuantity(productRequest.getQuantity());
-        product.setDescription(productRequest.getDescription());
-        product.setStatus(productRequest.getStatus());
+        // Cập nhật thông tin cơ bản
+        product.setName(request.getName());
+        product.setPrice(request.getPrice());
+        product.setQuantity(request.getQuantity());
+        product.setDescription(request.getDescription());
+        product.setImage(request.getImage());
+        product.setStatus(request.getStatus()); // Lưu status mới từ request
 
-        // Nếu có gửi link ảnh mới thì cập nhật, không thì giữ nguyên ảnh cũ
-        if (productRequest.getImage() != null && !productRequest.getImage().isEmpty()) {
-            product.setImage(productRequest.getImage());
+        productRepository.save(product);
+
+        // Cập nhật Category
+        if (request.getCategoryId() != null) {
+            // Xóa các category cũ của sản phẩm này trong bảng trung gian
+            productCategoryRepository.deleteByProductId(id);
+
+            // Thêm category mới
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Danh mục không tồn tại"));
+
+            ProductCategory pc = new ProductCategory();
+            pc.setProduct(product);
+            pc.setCategory(category);
+            productCategoryRepository.save(pc);
         }
 
-        return productMapper.toResponse(productRepository.save(product));
+        return productMapper.toResponse(product);
     }
 
     // Thêm hàm lấy sản phẩm theo danh mục

@@ -157,10 +157,9 @@
                             <th>ID</th>
                             <th>Hình ảnh</th>
                             <th>Tên sản phẩm</th>
-                            <th>Giá</th>
+                            <th>Danh mục</th> <th>Giá</th>
                             <th>Số lượng</th>
-                            <th>Trạng thái</th>
-                            <th>Thao tác</th>
+                            <th>Trạng thái</th> <th>Thao tác</th>
                         </tr>
                         </thead>
                         <tbody id="products-list-tbody">
@@ -279,6 +278,20 @@
                     <input type="text" id="edit-prod-image" placeholder="https://vd: link-anh-cua-ban.jpg" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
                 </div>
 
+                <div style="display:flex; gap:15px; margin-bottom: 15px;">
+                    <div style="flex:1;">
+                        <label style="font-weight:bold;">Danh mục:</label>
+                        <select id="edit-prod-category" style="width:100%; padding:8px; border:1px solid #ddd;"></select>
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-weight:bold;">Trạng thái:</label>
+                        <select id="edit-prod-status" style="width:100%; padding:8px; border:1px solid #ddd;">
+                            <option value="1">Đang bán (Active)</option>
+                            <option value="0">Ngừng bán (Inactive)</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div style="text-align:right;">
                     <button onclick="$('#editProductModal').hide()" style="padding:10px 15px; border:none; border-radius:4px; cursor:pointer; margin-right:10px; background:#e74c3c; color:white;">Hủy</button>
                     <button onclick="submitEditProduct()" style="padding:10px 15px; border:none; border-radius:4px; cursor:pointer; background:#2ecc71; color:white; font-weight:bold;">Lưu thay đổi</button>
@@ -311,9 +324,24 @@
                     <textarea id="add-prod-desc" rows="3" placeholder="Nhập mô tả sản phẩm..." style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;"></textarea>
                 </div>
 
+
                 <div style="margin-bottom: 15px;">
                     <label style="display:block; margin-bottom:5px; font-weight:bold;">Link hình ảnh (URL):</label>
                     <input type="text" id="add-prod-image" placeholder="https://vd: link-anh-cua-ban.jpg" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                </div>
+
+                <div class="form-group">
+                    <label>Danh mục:</label>
+                    <select id="add-prod-category" class="form-control">
+                        <option value="">-- Chọn danh mục --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Trạng thái:</label>
+                    <select id="add-prod-status" class="form-control">
+                        <option value="1">Đang kinh doanh</option>
+                        <option value="0">Ngừng kinh doanh</option>
+                    </select>
                 </div>
 
                 <div style="text-align:right;">
