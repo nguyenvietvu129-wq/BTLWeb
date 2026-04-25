@@ -559,7 +559,7 @@ function loadAllOrders() {
                 if (sortType === 'asc') {
                     orders.sort((a, b) => a.totalPrice - b.totalPrice); // Thấp đến Cao
                 } else if (sortType === 'desc') {
-                    orders.sort((a, b) => b.totalPrice - a.totalPrice); // Cao đến Thấp
+                    orders.sort((a, b) => b.totalPrice - a.totalPrice); // Cao đến Thấ
                 } else {
                     // Mặc định: Mới nhất lên đầu (Dựa vào ID hoặc ngày tháng)
                     orders.sort((a, b) => b.id - a.id);
