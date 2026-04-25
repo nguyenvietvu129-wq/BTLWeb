@@ -206,9 +206,15 @@
                 </div>
             </div>
         </div>
+
+
         <div id="revenue-content" class="content-area" style="display: none;">
-            <h2>Thống kê doanh thu</h2>
-            <p>Đang phát triển...</p>
+            <div class="top-products-section">
+                <h2>📊 Thống kê doanh thu theo ngày</h2>
+                <div class="chart-container" style="position: relative; height:40vh; width:100%; margin-top: 20px;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
         </div>
         <div id="top-products-content" class="content-area" style="display: none;">
             <h2>Sản phẩm bán chạy</h2>
@@ -367,6 +373,7 @@
 </div>
 
 <script th:src="@{/js/admin/admin-dashboard.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // Truyền dữ liệu từ model sang JavaScript
     const statsFromServer = /*[[${stats}]]*/ {};
