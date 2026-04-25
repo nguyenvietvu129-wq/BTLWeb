@@ -2,18 +2,13 @@ package com.example.ShopDt;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 @SpringBootApplication
-public class ShopDtApplication extends SpringBootServletInitializer {
 
-	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		return application.sources(ShopDtApplication.class);
-	}
+public class ShopDtApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ShopDtApplication.class, args);
 	}
+
 }

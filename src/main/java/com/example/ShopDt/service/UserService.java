@@ -47,7 +47,7 @@ public class UserService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        Role role = roleRepository.findById(1L)
+        Role role = roleRepository.findById(2L)
                 .orElseThrow(() -> new IllegalArgumentException("Role không tồn tại"));
         user.setRole(role);
 
