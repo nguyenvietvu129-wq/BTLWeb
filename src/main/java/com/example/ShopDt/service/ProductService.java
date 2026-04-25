@@ -93,21 +93,15 @@ public class ProductService {
                 : Sort.by(sortBy).ascending();
     }
     public PaginatedResponse<ProductResponse> findAllPaginated(int page, int size, String sortBy, String sortDir) {
-        // Validate và set giá trị mặc định
-        if (page < 0) page = 0;
-        if (size <= 0) size = 10;
-        if (sortBy == null || sortBy.isEmpty()) sortBy = "id";
-        if (sortDir == null || sortDir.isEmpty()) sortDir = "asc";
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
 
-        // Tạo Sort object
-        Sort sort = sortDir.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
+        if (sortBy != null && !sortBy.isEmpty()) {
+            sort = sortDir != null && sortDir.equalsIgnoreCase("asc")
+                    ? Sort.by(sortBy).ascending()
+                    : Sort.by(sortBy).descending();
+        }
 
-        // Tạo Pageable
         Pageable pageable = PageRequest.of(page, size, sort);
-
-        // Lấy dữ liệu phân trang
         Page<Product> productPage = productRepository.findAll(pageable);
 
         // Map sang ProductResponse
