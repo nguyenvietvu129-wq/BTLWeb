@@ -120,9 +120,41 @@ function renderCategories(categories) {
     container.html(html);
 }
 
+// Thay vì nhảy trang, chúng ta gọi thẳng API lấy sản phẩm theo danh mục
 function loadProductsByCategory(categoryId) {
-    // Chuyển sang trang search với categoryId
-    window.location.href = `/search?categoryId=${categoryId}`;
+    $("#ds-san-pham").html('<div class="loading">Đang tải sản phẩm theo danh mục...</div>');
+
+    // Chú ý: Backend (ProductController) của bạn cần có API hỗ trợ tìm theo categoryId
+    let url = `/api/products/search?categoryId=${categoryId}&page=0&size=${pageSize}`;
+
+    $.ajax({
+        url: url,
+        method: "GET",
+        dataType: "json",
+        success: function (response) {
+            if (response.success && response.data) {
+                // Cập nhật lại biến phân trang
+                totalPages = response.data.totalPages;
+                totalElements = response.data.totalElements;
+                currentPage = 0;
+
+                // Vẽ lại danh sách sản phẩm mới
+                renderProducts(response.data.content || []);
+                renderPagination();
+                updateTotalItems();
+
+                // Đổi màu nút danh mục đang được chọn (Tùy chọn cho giao diện đẹp hơn)
+                $('.btn-danh-muc').removeClass('active');
+                $(`.btn-danh-muc[onclick="loadProductsByCategory(${categoryId})"]`).addClass('active');
+            } else {
+                renderProducts([]);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.log("Lỗi tải sản phẩm theo danh mục:", error);
+            renderProducts([]);
+        }
+    });
 }
 
 function renderProducts(products) {

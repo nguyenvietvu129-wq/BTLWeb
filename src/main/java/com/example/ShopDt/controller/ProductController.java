@@ -95,8 +95,22 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public  ProductResponse getProductById(@PathVariable long id){
-        return  productService.findById(id);
+    @Operation(summary = "Lấy chi tiết 1 sản phẩm theo ID")
+    public ApiResponse<ProductResponse> getProductById(@PathVariable long id){
+        try {
+            ProductResponse product = productService.findById(id);
+            return ApiResponse.<ProductResponse>builder()
+                    .success(true)
+                    .message("Lấy sản phẩm thành công")
+                    .data(product)
+                    .build();
+        } catch (Exception ex) {
+            return ApiResponse.<ProductResponse>builder()
+                    .success(false)
+                    .message("Không tìm thấy sản phẩm")
+                    .error(ex.getMessage())
+                    .build();
+        }
     }
 
     @PostMapping
@@ -117,5 +131,32 @@ public class ProductController {
         productService.delete(id);
     }
 
+    @GetMapping("/search")
+    @Operation(summary = "Tìm kiếm sản phẩm theo danh mục (có phân trang)")
+    public ApiResponse<PaginatedResponse<ProductResponse>> getProductsByCategory(
+            @Parameter(description = "ID của danh mục")
+            @RequestParam Long categoryId,
+
+            @Parameter(description = "Số trang (bắt đầu từ 0)")
+            @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(description = "Số lượng sản phẩm mỗi trang")
+            @RequestParam(defaultValue = "12") int size) {
+
+        try {
+            PaginatedResponse<ProductResponse> result = productService.findByCategoryIdPaginated(categoryId, page, size);
+
+            return ApiResponse.<PaginatedResponse<ProductResponse>>builder()
+                    .success(true)
+                    .message("Lọc sản phẩm theo danh mục thành công")
+                    .data(result)
+                    .build();
+        } catch (Exception ex) {
+            return ApiResponse.<PaginatedResponse<ProductResponse>>builder()
+                    .success(false)
+                    .message("Lỗi khi lọc sản phẩm: " + ex.getMessage())
+                    .build();
+        }
+    }
 
 }
