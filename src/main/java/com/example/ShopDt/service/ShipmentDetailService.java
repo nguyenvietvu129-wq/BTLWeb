@@ -38,7 +38,7 @@ public class ShipmentDetailService {
      * Cập nhật shipment detail
      */
     public ShipmentDetailResponse updateShipmentDetail(ShipmentDetailRequest request) {
-        ShipmentDetail detail = shipmentDetailRepository.findById(request.getUserId())
+        ShipmentDetail detail = shipmentDetailRepository.findById(request.getId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy shipment detail"));
 
         shipmentDetailMapper.updateEntity(detail, request);

@@ -49,6 +49,7 @@ public class SecurityConfig {
                                 "/product/**",            // Trang chi tiết sản phẩm
                                 "/login",                 // Trang login
                                 "/register",              // Trang register
+                                "/checkout",              // Trang thanh toán
                                 "/css/**",                // Static resources
                                 "/js/**",
                                 "/images/**",

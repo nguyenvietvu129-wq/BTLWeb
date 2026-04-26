@@ -183,11 +183,20 @@ async function dangnhap(event) {
             luuCookieTokenMoi(token);
 
             // ========== PHẦN CHỈNH SỬA (giữ nguyên core, chỉ thêm điều kiện) ==========
-            // Chuyển hướng dựa trên role
-            let redirectUrl = "http://localhost:8080/home"; // mặc định cho USER
+            // Kiểm tra URL parameter redirect
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectParam = urlParams.get("redirect");
+
+            let redirectUrl;
+            if (redirectParam) {
+                redirectUrl = redirectParam;
+            } else if (role === "ADMIN") {
+                redirectUrl = "http://localhost:8080/admin";
+            } else {
+                redirectUrl = "http://localhost:8080/home";
+            }
 
             if (role === "ADMIN") {
-                redirectUrl = "http://localhost:8080/admin";
                 alert("Đăng nhập thành công! Chào mừng Quản trị viên.");
             } else {
                 alert("Đăng nhập thành công!");

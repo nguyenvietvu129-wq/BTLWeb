@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kho Linh Kiện - Trang Chủ</title>
+    <title>Kết quả tìm kiếm - Kho Linh Kiện</title>
     <link rel="stylesheet" th:href="@{/css/index.css}">
     <script th:src="@{https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js}"></script>
 </head>
@@ -43,17 +43,9 @@
             </div>
         </header>
 
-        <section class="hero-banner">
-            <div class="hero-content">
-                <span class="hero-tag">Hàng mới 2026</span>
-                <h2>Làm chủ công nghệ.<br>Tinh chọn chính xác.</h2>
-                <p>Vi điều khiển và cảm biến chất lượng công nghiệp, tối ưu cho hệ thống đòi hỏi độ ổn định cao.</p>
-            </div>
-        </section>
-
-        <section class="section-head">
+        <section class="section-head" style="margin-top: 16px;">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <h3><span id="category-title">Tất cả sản phẩm</span> <span id="total-items">(0 sản phẩm)</span></h3>
+                <h3><span id="category-title">Kết quả tìm kiếm</span> <span id="total-items">(0 sản phẩm)</span></h3>
 
                 <div class="sort-options">
                     <label for="sortPrice" style="font-weight: bold; margin-right: 10px;">Sắp xếp theo:</label>
@@ -75,5 +67,44 @@
 </div>
 
 <script th:src="@{/js/index.js}"></script>
+<script th:inline="javascript">
+    // Khởi tạo giá trị filter từ server nếu có
+    /*<![CDATA[*/
+    const serverKeyword = /*[[${keyword}]]*/ '';
+    const serverCategoryId = /*[[${categoryId}]]*/ '';
+    const serverMinPrice = /*[[${minPrice}]]*/ '';
+    const serverMaxPrice = /*[[${maxPrice}]]*/ '';
+    const serverSort = /*[[${sort}]]*/ '';
+
+    $(document).ready(function() {
+        if (serverKeyword) {
+            currentKeyword = serverKeyword;
+            $('#searchInput').val(serverKeyword);
+            $('#category-title').text(`Kết quả tìm kiếm cho: "${serverKeyword}"`);
+        }
+        if (serverCategoryId) {
+            currentCategoryId = serverCategoryId;
+        }
+        if (serverMinPrice) {
+            currentMinPrice = serverMinPrice;
+            $('#minPrice').val(serverMinPrice);
+        }
+        if (serverMaxPrice) {
+            currentMaxPrice = serverMaxPrice;
+            $('#maxPrice').val(serverMaxPrice);
+        }
+        if (serverSort) {
+            const [sortBy, sortDir] = serverSort.split(',');
+            currentSortBy = sortBy || 'id';
+            currentSortDir = sortDir || 'desc';
+            $('#sortPrice').val(`${currentSortBy}-${currentSortDir}`);
+        }
+
+        // Load lại sản phẩm với filter từ server
+        loadProducts();
+    });
+    /*]]>*/
+</script>
 </body>
 </html>
+

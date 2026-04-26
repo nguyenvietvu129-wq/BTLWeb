@@ -135,8 +135,16 @@ function removeCartItem(productId) {
 
 // 5. Nút Đặt hàng
 function checkout() {
-    alert("🚀 Chức năng Thanh Toán đang được hoàn thiện!");
-    // Khi làm trang thanh toán, bạn chuyển hướng bằng: window.location.href = '/checkout';
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+
+    if (!token || !userId) {
+        alert("Vui lòng đăng nhập để tiến hành thanh toán!");
+        window.location.href = "/login?redirect=/checkout";
+        return;
+    }
+
+    window.location.href = "/checkout";
 }
 
 // Helper: Định dạng tiền tệ VND

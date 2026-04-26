@@ -7,6 +7,8 @@ let currentSortBy = 'id';
 let currentSortDir = 'desc';
 let currentKeyword = '';
 let currentCategoryId = '';
+let currentMinPrice = '';
+let currentMaxPrice = '';
 
 $(document).ready(function () {
     bindTopActions();
@@ -67,6 +69,14 @@ function loadProducts() {
     // Nếu có danh mục thì ghép thêm vào URL (áp dụng cho hàm loadProductsByCategory bên dưới)
     if (currentCategoryId !== '') {
         url += `&listCategoryId=${currentCategoryId}`;
+    }
+
+    // Nếu có khoảng giá thì ghép thêm vào URL
+    if (currentMinPrice !== '' && currentMinPrice !== null) {
+        url += `&minPrice=${currentMinPrice}`;
+    }
+    if (currentMaxPrice !== '' && currentMaxPrice !== null) {
+        url += `&maxPrice=${currentMaxPrice}`;
     }
 
     // Ghép thêm sắp xếp
@@ -412,4 +422,93 @@ function handleLogout() {
     localStorage.removeItem("userId");
     localStorage.removeItem("role");
     window.location.href = "/login";
+}
+
+// ========== LỌC THEO GIÁ ==========
+$(document).ready(function () {
+    const applyBtn = document.getElementById("applyPriceFilter");
+    const clearBtn = document.getElementById("clearFilter");
+
+    if (applyBtn) {
+        applyBtn.addEventListener("click", applyPriceFilter);
+    }
+    if (clearBtn) {
+        clearBtn.addEventListener("click", clearFilters);
+    }
+
+    // Cho phép nhấn Enter trong input giá để lọc
+    const minPriceInput = document.getElementById("minPrice");
+    const maxPriceInput = document.getElementById("maxPrice");
+
+    if (minPriceInput) {
+        minPriceInput.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") applyPriceFilter();
+        });
+    }
+    if (maxPriceInput) {
+        maxPriceInput.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") applyPriceFilter();
+        });
+    }
+});
+
+function applyPriceFilter() {
+    const minInput = document.getElementById("minPrice");
+    const maxInput = document.getElementById("maxPrice");
+
+    const minVal = minInput ? minInput.value.trim() : '';
+    const maxVal = maxInput ? maxInput.value.trim() : '';
+
+    // Validate
+    if (minVal !== '' && maxVal !== '' && parseFloat(minVal) > parseFloat(maxVal)) {
+        alert("Giá từ không được lớn hơn giá đến!");
+        return;
+    }
+
+    currentMinPrice = minVal !== '' ? parseFloat(minVal) : '';
+    currentMaxPrice = maxVal !== '' ? parseFloat(maxVal) : '';
+    currentPage = 0;
+
+    // Cập nhật tiêu đề
+    let filterText = 'Tất cả sản phẩm';
+    if (currentKeyword !== '') {
+        filterText = `Kết quả tìm kiếm: "${currentKeyword}"`;
+    } else if (currentCategoryId !== '') {
+        const activeBtn = $('.btn-danh-muc.active');
+        filterText = activeBtn.length ? activeBtn.text() : 'Tất cả sản phẩm';
+    }
+
+    if (currentMinPrice !== '' || currentMaxPrice !== '') {
+        const minStr = currentMinPrice !== '' ? formatPrice(currentMinPrice) : '0 VND';
+        const maxStr = currentMaxPrice !== '' ? formatPrice(currentMaxPrice) : '∞';
+        filterText += ` (Giá: ${minStr} - ${maxStr})`;
+    }
+
+    $('#category-title').text(filterText);
+    loadProducts();
+}
+
+function clearFilters() {
+    const minInput = document.getElementById("minPrice");
+    const maxInput = document.getElementById("maxPrice");
+
+    if (minInput) minInput.value = '';
+    if (maxInput) maxInput.value = '';
+
+    currentMinPrice = '';
+    currentMaxPrice = '';
+    currentKeyword = '';
+    currentCategoryId = '';
+    currentPage = 0;
+    currentSortBy = 'id';
+    currentSortDir = 'desc';
+
+    $('#searchInput').val('');
+    $('#sortPrice').val('id-desc');
+    $('#category-title').text('Tất cả sản phẩm');
+
+    $('.btn-danh-muc').removeClass('active');
+    $('.btn-danh-muc').first().addClass('active');
+
+    loadProducts();
 }
