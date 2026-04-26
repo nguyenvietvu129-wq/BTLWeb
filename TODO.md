@@ -40,4 +40,6 @@
 - [x] Step 5: Update SecurityConfig.java
 - [x] Step 6: Update ShipmentDetailRequest.java & ShipmentDetailService.java
 - [x] Step 7: Create OrderShowController.java
+- [x] Step 8: Fix ProductMapper to map categories
+- [x] Step 9: Fix admin-dashboard.js to use product.categories
 

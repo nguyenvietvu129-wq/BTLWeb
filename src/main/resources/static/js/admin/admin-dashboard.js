@@ -346,9 +346,9 @@ function loadAllProducts() {
                 currentAdminProducts.forEach(product => {
                     // 1. Xử lý hiển thị danh mục (Nối tên các danh mục nếu có nhiều)
                     let categoryName = 'Chưa phân loại';
-                    if (product.category && product.category.length > 0) {
+                    if (product.categories && product.categories.length > 0) {
                         // Lấy danh sách tên danh mục và nối lại bằng dấu phẩy
-                        categoryName = product.category.map(c => c.name).join(', ');
+                        categoryName = product.categories.map(c => c.name).join(', ');
                     }
 
                     // 2. Xử lý hiển thị Trạng thái (Dựa trên trường status trong DB)
