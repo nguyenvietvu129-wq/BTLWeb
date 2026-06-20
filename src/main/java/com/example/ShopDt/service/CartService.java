@@ -9,7 +9,7 @@ import com.example.ShopDt.entity.User;
 import com.example.ShopDt.mapper.cart.CartMapper;
 import com.example.ShopDt.repository.CartRepository;
 import com.example.ShopDt.repository.ProductRepository;
-import com.example.ShopDt.repository.UserRepository;
+import com.example.ShopDt.security.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,35 +20,38 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CartService {
 
-
     private final CartRepository cartRepository;
-    private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final CartMapper cartMapper;
+    private final CurrentUserService currentUserService;
 
-    //Lấy toàn bộ giỏ hàng của 1 user
     public List<CartResponse> getCartByUserId(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        assertCurrentUser(userId);
         return cartRepository.findByUserId(userId)
                 .stream()
                 .map(cartMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
-    // thêm sản phẩm vào giỏ
     public CartResponse addToCart(CartRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (request.getQuantity() <= 0) {
+            throw new RuntimeException("Số lượng phải lớn hơn 0");
+        }
+
+        User user = currentUserService.getCurrentUser();
+        assertSameUser(user.getId(), request.getUserId());
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
-        
-        // Kiểm tra số lượng sản phẩm còn lại
+
+        if (product.getStatus() != 1) {
+            throw new RuntimeException("Sản phẩm hiện không còn được bán");
+        }
+
         int currentQuantityInCart = cartRepository.findByUserAndProduct(user, product)
                 .map(Cart::getQuantity)
                 .orElse(0);
         int totalRequested = currentQuantityInCart + request.getQuantity();
-        
+
         if (totalRequested > product.getQuantity()) {
             throw new RuntimeException("Sản phẩm " + product.getName() + " không đủ số lượng! Còn lại: " + product.getQuantity());
         }
@@ -64,17 +67,20 @@ public class CartService {
     }
 
     public void updateQuantity(List<UpdateCartRequest> updateCartRequest) {
-        for  (UpdateCartRequest request : updateCartRequest) {
-            User user = userRepository.findById(request.getUserId())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = currentUserService.getCurrentUser();
+        for (UpdateCartRequest request : updateCartRequest) {
+            if (request.getQuantity() <= 0) {
+                throw new RuntimeException("Số lượng phải lớn hơn 0");
+            }
+
+            assertSameUser(user.getId(), request.getUserId());
             Product product = productRepository.findById(request.getProductId())
                     .orElseThrow(() -> new RuntimeException("Product not found"));
-            
-            // Kiểm tra số lượng sản phẩm còn lại
+
             if (request.getQuantity() > product.getQuantity()) {
                 throw new RuntimeException("Sản phẩm " + product.getName() + " không đủ số lượng! Còn lại: " + product.getQuantity());
             }
-            
+
             Cart cart = cartRepository.findByUserAndProduct(user, product)
                     .orElseThrow(() -> new RuntimeException("Cart not found"));
             cart.setQuantity(request.getQuantity());
@@ -83,14 +89,23 @@ public class CartService {
     }
 
     public void removeFromCart(Long userId, Long productId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = currentUserService.getCurrentUser();
+        assertSameUser(user.getId(), userId);
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         Cart cart = cartRepository.findByUserAndProduct(user, product)
                 .orElseThrow(() -> new RuntimeException("Cart item not found"));
-
         cartRepository.delete(cart);
     }
-}
 
+    private void assertCurrentUser(Long requestedUserId) {
+        User currentUser = currentUserService.getCurrentUser();
+        assertSameUser(currentUser.getId(), requestedUserId);
+    }
+
+    private void assertSameUser(Long currentUserId, Long requestedUserId) {
+        if (requestedUserId == null || !currentUserId.equals(requestedUserId)) {
+            throw new RuntimeException("Ban khong co quyen thao tac gio hang nay");
+        }
+    }
+}

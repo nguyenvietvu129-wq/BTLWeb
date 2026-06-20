@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +39,10 @@ public class UserService {
             throw new IllegalArgumentException("Email đã tồn tại");
         }
 
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Ten dang nhap da ton tai");
+        }
+
         if (request.getPassword() == null || request.getPassword().isBlank()) {
             log.warn("Mật khẩu là bắt buộc");
             throw new IllegalArgumentException("Mật khẩu là bắt buộc");
@@ -47,6 +52,8 @@ public class UserService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setStatus(1);
+        user.setCreateAt(LocalDateTime.now());
         Role role = roleRepository.findById(2L)
                 .orElseThrow(() -> new IllegalArgumentException("Role không tồn tại"));
         user.setRole(role);
@@ -60,6 +67,10 @@ public class UserService {
     public LoginResponse login(String username, String password) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy username: " + username));
+
+        if (user.getStatus() < 0) {
+            throw new IllegalArgumentException("Tai khoan da bi khoa hoac chua duoc kich hoat");
+        }
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new IllegalArgumentException("Sai mật khẩu!");
@@ -90,8 +101,16 @@ public class UserService {
         User user = currentUserService.getCurrentUser();
 
 
-        user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword());
+        if (request.getUsername() != null && !request.getUsername().isBlank()
+                && !request.getUsername().equals(user.getUsername())) {
+            if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+                throw new IllegalArgumentException("Ten dang nhap da ton tai");
+            }
+            user.setUsername(request.getUsername());
+        }
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
 
         return userMapper.toUserResponse(userRepository.save(user));
     }

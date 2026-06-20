@@ -2,6 +2,7 @@ package com.example.ShopDt.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.*;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -31,7 +32,8 @@ public class SecurityConfig {
                             "http://localhost:8080",
                             "http://127.0.0.1:8080",
                             "http://localhost:3000",
-                            "http://localhost:4200"
+                            "http://localhost:4200",
+                            "https://married-manly-chain.ngrok-free.dev"
                     ));
                     corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     corsConfig.setAllowedHeaders(List.of("*"));
@@ -49,6 +51,8 @@ public class SecurityConfig {
                                 "/product/**",            // Trang chi tiết sản phẩm
                                 "/login",                 // Trang login
                                 "/register",              // Trang register
+                                "/cart",                  // Trang giỏ hàng
+                                "/orders",                // Trang lịch sử đơn hàng
                                 "/checkout",              // Trang thanh toán
                                 "/css/**",                // Static resources
                                 "/js/**",
@@ -60,14 +64,20 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/login",
                                 "/api/auth/**",
-                                "/api/products",
-                                "/api/products/**",
-                                "/api/category",
-                                "/api/category/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui/index.html"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/products",
+                                "/api/products/**",
+                                "/api/category",
+                                "/api/category/**"
+                        ).permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/products/**", "/api/category/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/products/**", "/api/category/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/**", "/api/category/**").hasRole("ADMIN")
 
                         // Admin endpoints
                         .requestMatchers("/admin/**").hasRole("ADMIN")

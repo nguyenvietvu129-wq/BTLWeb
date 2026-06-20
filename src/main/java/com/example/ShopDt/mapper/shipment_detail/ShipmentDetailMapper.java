@@ -11,18 +11,17 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface ShipmentDetailMapper {
 
-    // Tạo mới shipment detail
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", source = "user")
+    @Mapping(target = "status", source = "request.status")
     ShipmentDetail toEntity(ShipmentDetailRequest request, User user);
 
-    // Map sang DTO phản hồi
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "userName", source = "user.username")
     ShipmentDetailResponse toResponse(ShipmentDetail shipmentDetail);
 
-    // Cập nhật shipment detail
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "orders", ignore = true)
     void updateEntity(@MappingTarget ShipmentDetail entity, ShipmentDetailRequest request);
 }
-
-

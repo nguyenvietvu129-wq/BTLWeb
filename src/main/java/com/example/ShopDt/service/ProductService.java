@@ -101,9 +101,15 @@ public class ProductService {
                 : Sort.by(sortBy).ascending();
     }
     public PaginatedResponse<ProductResponse> findAllPaginated(int page, int size, String sortBy, String sortDir) {
+        page = Math.max(page, 0);
+        size = (size <= 0) ? 10 : size;
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
 
         if (sortBy != null && !sortBy.isEmpty()) {
+            List<String> allowedFields = Arrays.asList("id", "name", "price", "quantity");
+            if (!allowedFields.contains(sortBy)) {
+                sortBy = "id";
+            }
             sort = sortDir != null && sortDir.equalsIgnoreCase("asc")
                     ? Sort.by(sortBy).ascending()
                     : Sort.by(sortBy).descending();
@@ -161,34 +167,28 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
 
-        // Cập nhật thông tin cơ bản
         product.setName(request.getName());
         product.setPrice(request.getPrice());
         product.setQuantity(request.getQuantity());
         product.setDescription(request.getDescription());
         product.setImage(request.getImage());
-        product.setStatus(request.getStatus()); // Lưu status mới từ request
+        product.setStatus(request.getStatus());
 
-        productRepository.save(product);
-
-        // Cập nhật Category
         if (request.getCategoryId() != null) {
-            // Xóa các category cũ của sản phẩm này trong bảng trung gian
-            productCategoryRepository.deleteByProductId(id);
-
-            // Thêm category mới
+            // Tìm category mới trước để đảm bảo nó tồn tại
             Category category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(() -> new RuntimeException("Danh mục không tồn tại"));
+            productCategoryRepository.deleteByProductId(id);
 
             ProductCategory pc = new ProductCategory();
             pc.setProduct(product);
             pc.setCategory(category);
             productCategoryRepository.save(pc);
         }
+        productRepository.save(product);
 
         return productMapper.toResponse(product);
     }
-
     // Thêm hàm lấy sản phẩm theo danh mục
     // Thêm hàm lấy sản phẩm theo danh mục
     public PaginatedResponse<ProductResponse> findByCategoryIdPaginated(Long categoryId, int page, int size) {
@@ -220,6 +220,7 @@ public class ProductService {
     public void delete(long id){
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
-        productRepository.delete(product);
+        product.setStatus(0);
+        productRepository.save(product);
     }
 }

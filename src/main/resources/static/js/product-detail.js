@@ -7,6 +7,8 @@ $(document).ready(function () {
     }
 
     // Sự kiện nút giỏ hàng góc trên
+    ensureOrdersButton();
+
     $('#cart-btn').click(function() {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -16,7 +18,32 @@ $(document).ready(function () {
             window.location.href = "/cart";
         }
     });
+
+    $('#orders-btn').click(function() {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            alert("Vui lòng đăng nhập để xem đơn hàng!");
+            window.location.href = "/login?redirect=/orders";
+        } else {
+            window.location.href = "/orders";
+        }
+    });
 });
+
+function ensureOrdersButton() {
+    const cartBtn = document.getElementById("cart-btn");
+    if (!cartBtn || document.getElementById("orders-btn")) {
+        return;
+    }
+
+    const ordersBtn = document.createElement("button");
+    ordersBtn.id = "orders-btn";
+    ordersBtn.className = "icon-btn";
+    ordersBtn.type = "button";
+    ordersBtn.title = "Đơn hàng của tôi";
+    ordersBtn.textContent = "Đơn hàng";
+    cartBtn.insertAdjacentElement("afterend", ordersBtn);
+}
 
 function loadProductDetail(id) {
     // Gọi API lấy 1 sản phẩm. (Đảm bảo Backend của bạn có API /api/products/{id})
@@ -43,7 +70,7 @@ function renderProductDetail(product) {
 
     const html = `
         <div class="detail-image">
-            <img src="${product.image || '/images/default-product.png'}" alt="${escapeHtml(product.name)}" onerror="this.src='/images/default-product.png'">
+            <img src="${getProductImageUrl(product.image)}" alt="${escapeHtml(product.name)}" onerror="this.src='/images/default-product.png'">
         </div>
         <div class="detail-info">
             <h2 class="detail-title">${escapeHtml(product.name)}</h2>
@@ -119,4 +146,17 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function getProductImageUrl(image) {
+    if (!image) {
+        return "/images/default-product.png";
+    }
+
+    const value = image.trim();
+    if (/^(https?:)?\/\//i.test(value) || value.startsWith("/") || value.startsWith("data:") || value.startsWith("blob:")) {
+        return value;
+    }
+
+    return value.startsWith("images/") ? `/${value}` : `/images/${value}`;
 }

@@ -5,6 +5,7 @@ import com.example.ShopDt.dto.response.ApiResponse;
 import com.example.ShopDt.dto.response.OrderResponse;
 import com.example.ShopDt.service.OrderService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -20,65 +21,75 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/create")
-    public OrderResponse createOrder(@RequestBody OrderRequest request) {
-        return orderService.createOrder(request);
+    public ApiResponse<OrderResponse> createOrder(@Valid @RequestBody OrderRequest request) {
+        OrderResponse order = orderService.createOrder(request);
+        return ApiResponse.<OrderResponse>builder()
+                .success(true)
+                .message("Đặt hàng thành công")
+                .data(order)
+                .build();
     }
 
     @GetMapping("/{orderId}")
-    public ApiResponse<OrderResponse> getOrderById(
-            @PathVariable Long orderId,
-            @RequestParam Long userId) {
-        try {
-            OrderResponse order = orderService.getOrderById(orderId, userId);
-            return ApiResponse.<OrderResponse>builder()
-                    .success(true)
-                    .message("Lấy thông tin đơn hàng thành công")
-                    .data(order)
-                    .build();
-        } catch (Exception ex) {
-            return ApiResponse.<OrderResponse>builder()
-                    .success(false)
-                    .message("Lấy thông tin đơn hàng thất bại")
-                    .error(ex.getMessage())
-                    .build();
-        }
+    public ApiResponse<OrderResponse> getOrderById(@PathVariable Long orderId, @RequestParam Long userId) {
+        OrderResponse order = orderService.getOrderById(orderId, userId);
+        return ApiResponse.<OrderResponse>builder()
+                .success(true)
+                .message("Lấy thông tin đơn hàng thành công")
+                .data(order)
+                .build();
+    }
+
+    @GetMapping("/user/{userId}")
+    public ApiResponse<List<OrderResponse>> getOrdersByUser(@PathVariable Long userId) {
+        List<OrderResponse> orders = orderService.getOrdersByUser(userId);
+        return ApiResponse.<List<OrderResponse>>builder()
+                .success(true)
+                .message("Lấy lịch sử đơn hàng thành công")
+                .data(orders)
+                .build();
+    }
+
+    @PutMapping("/{orderId}/cancel")
+    public ApiResponse<OrderResponse> cancelOrderByUser(@PathVariable Long orderId, @RequestParam Long userId) {
+        OrderResponse order = orderService.cancelOrderByUser(orderId, userId);
+        return ApiResponse.<OrderResponse>builder()
+                .success(true)
+                .message("Hủy đơn hàng thành công")
+                .data(order)
+                .build();
     }
 
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<OrderResponse>> getAllOrders() {
-        try {
-            List<OrderResponse> orders = orderService.getAllOrders();
-            return ApiResponse.<List<OrderResponse>>builder()
-                    .success(true)
-                    .message("Lấy danh sách đơn hàng thành công")
-                    .data(orders)
-                    .build();
-        } catch (Exception ex) {
-            return ApiResponse.<List<OrderResponse>>builder()
-                    .success(false)
-                    .message("Lấy danh sách đơn hàng thất bại")
-                    .error(ex.getMessage())
-                    .build();
-        }
+        List<OrderResponse> orders = orderService.getAllOrders();
+        return ApiResponse.<List<OrderResponse>>builder()
+                .success(true)
+                .message("Lấy danh sách đơn hàng thành công")
+                .data(orders)
+                .build();
     }
-    // API cho Admin xem chi tiết đơn hàng
+
     @GetMapping("/admin/{orderId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<OrderResponse> getOrderByIdForAdmin(@PathVariable Long orderId) {
-        try {
-            OrderResponse order = orderService.getOrderByIdForAdmin(orderId);
-            return ApiResponse.<OrderResponse>builder()
-                    .success(true)
-                    .message("Lấy thông tin chi tiết đơn hàng thành công")
-                    .data(order)
-                    .build();
-        } catch (Exception ex) {
-            return ApiResponse.<OrderResponse>builder()
-                    .success(false)
-                    .message("Lấy thông tin thất bại")
-                    .error(ex.getMessage())
-                    .build();
-        }
+        OrderResponse order = orderService.getOrderByIdForAdmin(orderId);
+        return ApiResponse.<OrderResponse>builder()
+                .success(true)
+                .message("Lấy thông tin chi tiết đơn hàng thành công")
+                .data(order)
+                .build();
+    }
+
+    @PutMapping("/admin/{orderId}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<OrderResponse> updateOrderStatus(@PathVariable Long orderId, @RequestParam int status) {
+        OrderResponse order = orderService.updateOrderStatus(orderId, status);
+        return ApiResponse.<OrderResponse>builder()
+                .success(true)
+                .message("Cập nhật trạng thái đơn hàng thành công")
+                .data(order)
+                .build();
     }
 }

@@ -1,5 +1,6 @@
 package com.example.ShopDt.controller;
 
+import com.example.ShopDt.dto.request.CategoryRequest;
 import com.example.ShopDt.dto.request.ProductCategoryRequest;
 import com.example.ShopDt.dto.response.ApiResponse;
 import com.example.ShopDt.dto.response.CategoryResponse;
@@ -7,7 +8,9 @@ import com.example.ShopDt.dto.response.ProductCategoryResponse;
 import com.example.ShopDt.dto.response.ProductResponse;
 import com.example.ShopDt.service.CategoryService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -57,6 +60,7 @@ public class CategoryController {
     }
 
     @PostMapping("/add-product")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<ProductCategoryResponse> getProductCategory(@RequestBody ProductCategoryRequest request) {
         try{
             ProductCategoryResponse productToCategory = categoryService.addProductToCategory(request);
@@ -72,5 +76,40 @@ public class CategoryController {
                     .error(ex.getMessage())
                     .build();
         }
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<CategoryResponse> createCategory(@Valid @RequestBody CategoryRequest request) {
+        CategoryResponse category = categoryService.createCategory(request);
+        return ApiResponse.<CategoryResponse>builder()
+                .success(true)
+                .message("Them danh muc thanh cong")
+                .data(category)
+                .build();
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<CategoryResponse> updateCategory(
+            @PathVariable Long id,
+            @Valid @RequestBody CategoryRequest request) {
+        CategoryResponse category = categoryService.updateCategory(id, request);
+        return ApiResponse.<CategoryResponse>builder()
+                .success(true)
+                .message("Cap nhat danh muc thanh cong")
+                .data(category)
+                .build();
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<CategoryResponse> deleteCategory(@PathVariable Long id) {
+        CategoryResponse category = categoryService.softDeleteCategory(id);
+        return ApiResponse.<CategoryResponse>builder()
+                .success(true)
+                .message("An danh muc thanh cong")
+                .data(category)
+                .build();
     }
 }

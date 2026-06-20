@@ -45,7 +45,7 @@ function luuCookieTokenMoi(token) {
     document.cookie = `token=${encodeURIComponent(token)}; path=/; max-age=3600; samesite=lax`;
 }
 
-if (window.location.pathname === "/api/auth/login") {
+if (window.location.pathname === "/login") {
     xoaCookieTokenCu();
     localStorage.removeItem("token");
     localStorage.removeItem("username");
@@ -105,7 +105,7 @@ async function xacnhandangky(event) {
     }
 
     try {
-        const res = await fetch("http://localhost:8080/api/auth/register", {
+        const res = await fetch("/api/auth/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, username, password })
@@ -159,7 +159,7 @@ async function dangnhap(event) {
     loginButton.disabled = true;
 
     try {
-        const res = await fetch("http://localhost:8080/api/auth/login", {
+        const res = await fetch("/api/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password })
@@ -188,12 +188,12 @@ async function dangnhap(event) {
             const redirectParam = urlParams.get("redirect");
 
             let redirectUrl;
-            if (redirectParam) {
+            if (redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")) {
                 redirectUrl = redirectParam;
             } else if (role === "ADMIN") {
-                redirectUrl = "http://localhost:8080/admin";
+                redirectUrl = "/admin";
             } else {
-                redirectUrl = "http://localhost:8080/home";
+                redirectUrl = "/home";
             }
 
             if (role === "ADMIN") {
@@ -226,13 +226,13 @@ function checkAlreadyLoggedIn() {
     const role = localStorage.getItem("role");
 
     if (token && role === "ADMIN") {
-        window.location.href = "http://localhost:8080/admin";
+        window.location.href = "/admin";
     } else if (token && role === "CUSTOMER") {
-        window.location.href = "http://localhost:8080/home";
+        window.location.href = "/home";
     }
 }
 
 // Gọi hàm kiểm tra khi trang login được tải
-if (window.location.pathname === "/api/auth/login") {
+if (window.location.pathname === "/login") {
     checkAlreadyLoggedIn();
 }

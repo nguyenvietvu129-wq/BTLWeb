@@ -10,5 +10,9 @@ public class OrderShowController {
     public String showCheckout() {
         return "checkout";
     }
-}
 
+    @GetMapping("/orders")
+    public String showMyOrders() {
+        return "orders";
+    }
+}

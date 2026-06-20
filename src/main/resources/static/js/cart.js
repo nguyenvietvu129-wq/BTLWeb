@@ -1,10 +1,39 @@
 $(document).ready(function () {
+    ensureOrdersShortcut();
     loadCart();
 });
 
 let currentCart = []; // Lưu trữ tạm mảng giỏ hàng để tính toán
 
 // 1. Tải dữ liệu giỏ hàng từ API
+function ensureOrdersShortcut() {
+    const topbar = document.querySelector(".topbar");
+    if (!topbar || document.getElementById("orders-btn")) {
+        return;
+    }
+
+    const ordersBtn = document.createElement("button");
+    ordersBtn.id = "orders-btn";
+    ordersBtn.className = "icon-btn";
+    ordersBtn.type = "button";
+    ordersBtn.title = "Đơn hàng của tôi";
+    ordersBtn.textContent = "Đơn hàng";
+    ordersBtn.style.background = "#2c3e50";
+    ordersBtn.style.color = "white";
+    ordersBtn.style.padding = "10px 20px";
+    ordersBtn.addEventListener("click", function () {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            alert("Vui lòng đăng nhập để xem đơn hàng!");
+            window.location.href = "/login?redirect=/orders";
+            return;
+        }
+        window.location.href = "/orders";
+    });
+
+    topbar.appendChild(ordersBtn);
+}
+
 function loadCart() {
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
@@ -43,7 +72,7 @@ function renderCart() {
 
         tbodyHtml += `
             <tr>
-                <td><img src="${item.image || '/images/default-product.png'}" class="cart-item-img" onerror="this.src='/images/default-product.png'"></td>
+                <td><img src="${getProductImageUrl(item.image)}" class="cart-item-img" onerror="this.src='/images/default-product.png'"></td>
                 <td style="text-align: left; font-weight: bold; font-size: 16px;">${escapeHtml(item.productName)}</td>
                 <td style="color: #2c3e50; font-weight: bold;">${formatCurrency(item.price)}</td>
                 <td>
@@ -158,4 +187,17 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function getProductImageUrl(image) {
+    if (!image) {
+        return "/images/default-product.png";
+    }
+
+    const value = image.trim();
+    if (/^(https?:)?\/\//i.test(value) || value.startsWith("/") || value.startsWith("data:") || value.startsWith("blob:")) {
+        return value;
+    }
+
+    return value.startsWith("images/") ? `/${value}` : `/images/${value}`;
 }

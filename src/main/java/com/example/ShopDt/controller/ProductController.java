@@ -10,10 +10,18 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/products")
@@ -22,6 +30,9 @@ import java.util.List;
 
 public class ProductController {
     private final ProductService productService;
+
+    @Value("${app.upload-dir:uploads}")
+    private String uploadDir;
 
 //    @GetMapping("/search")
 //    @Operation(summary = "Tìm kiếm sản phẩm theo tiêu chí (có phân trang và sắp xếp)")
@@ -115,13 +126,13 @@ public class ProductController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ProductResponse addProduct(@RequestBody ProductRequest request){
+    public ProductResponse addProduct(@Valid @RequestBody ProductRequest request){
         return  productService.create(request);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ProductResponse updateProduct(@PathVariable long id, @RequestBody ProductRequest request){
+    public ProductResponse updateProduct(@PathVariable long id, @Valid @RequestBody ProductRequest request){
         return productService.update(id,request);
     }
     
@@ -132,6 +143,50 @@ public class ProductController {
     }
 
     // Dán đoạn này vào trong class ProductController
+    @PostMapping("/upload")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<String> uploadProductImage(@RequestParam("file") MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new RuntimeException("File anh khong duoc de trong");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new RuntimeException("Chi cho phep upload file anh");
+        }
+
+        String extension = getExtension(file.getOriginalFilename());
+        Set<String> allowedExtensions = Set.of(".jpg", ".jpeg", ".png", ".webp", ".gif");
+        if (!allowedExtensions.contains(extension.toLowerCase())) {
+            throw new RuntimeException("Dinh dang anh khong hop le. Chi ho tro jpg, jpeg, png, webp, gif");
+        }
+
+        Path productImageDir = Path.of(uploadDir, "products").toAbsolutePath().normalize();
+        Files.createDirectories(productImageDir);
+
+        String storedFilename = UUID.randomUUID() + extension.toLowerCase();
+        Path target = productImageDir.resolve(storedFilename).normalize();
+        file.transferTo(target);
+
+        String imageUrl = "/uploads/products/" + storedFilename;
+        return ApiResponse.<String>builder()
+                .success(true)
+                .message("Upload anh san pham thanh cong")
+                .data(imageUrl)
+                .build();
+    }
+
+    private String getExtension(String filename) {
+        if (filename == null) {
+            return "";
+        }
+        int dotIndex = filename.lastIndexOf('.');
+        if (dotIndex < 0) {
+            return "";
+        }
+        return filename.substring(dotIndex);
+    }
+
     @GetMapping("/search")
     @Operation(summary = "Tìm kiếm sản phẩm theo tiêu chí")
     public ApiResponse<PaginatedResponse<ProductResponse>> searchProducts(
@@ -140,6 +195,7 @@ public class ProductController {
             @RequestParam(defaultValue = "12") int size) {
 
         try {
+
             PaginatedResponse<ProductResponse> result = productService.searchProducts(
                     searchRequest, page, size);
             return ApiResponse.<PaginatedResponse<ProductResponse>>builder()

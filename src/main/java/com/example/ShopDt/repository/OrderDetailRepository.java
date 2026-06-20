@@ -14,9 +14,9 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
     List<OrderDetail> findByProduct(Product product);
     boolean existsByProduct(Product product);
 
-    // Lấy top 10 sản phẩm bán chạy nhất
     @Query("SELECT p.name, SUM(od.quantity), SUM(od.price), p.image " +
-            "FROM OrderDetail od JOIN od.product p " +
+            "FROM OrderDetail od JOIN od.product p JOIN od.orders o " +
+            "WHERE o.status = 4 " +
             "GROUP BY p.id, p.name, p.image " +
             "ORDER BY SUM(od.quantity) DESC")
     List<Object[]> getTopSellingProducts(Pageable pageable);

@@ -5,7 +5,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@Entity
+@Entity(name = "OrderEntity")
 @Table(name = "orders")
 @Data
 @NoArgsConstructor

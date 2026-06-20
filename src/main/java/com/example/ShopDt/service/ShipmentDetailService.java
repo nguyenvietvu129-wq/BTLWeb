@@ -6,7 +6,7 @@ import com.example.ShopDt.entity.ShipmentDetail;
 import com.example.ShopDt.entity.User;
 import com.example.ShopDt.mapper.shipment_detail.ShipmentDetailMapper;
 import com.example.ShopDt.repository.ShipmentDetailRepository;
-import com.example.ShopDt.repository.UserRepository;
+import com.example.ShopDt.security.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,34 +16,46 @@ public class ShipmentDetailService {
 
     private final ShipmentDetailRepository shipmentDetailRepository;
     private final ShipmentDetailMapper shipmentDetailMapper;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
     public ShipmentDetailResponse getShipmentDetailByUser(Long userId) {
+        assertCurrentUser(userId);
         ShipmentDetail detail = shipmentDetailRepository.findByUser_Id(userId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy địa chỉ giao hàng của user"));
+                .orElseThrow(() -> new RuntimeException("Khong tim thay dia chi giao hang cua user"));
         return shipmentDetailMapper.toResponse(detail);
     }
 
     public ShipmentDetailResponse createShipmentDetail(ShipmentDetailRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+        User user = currentUserService.getCurrentUser();
+        assertSameUser(user.getId(), request.getUserId());
 
         ShipmentDetail detail = shipmentDetailMapper.toEntity(request, user);
-
         ShipmentDetail saved = shipmentDetailRepository.save(detail);
         return shipmentDetailMapper.toResponse(saved);
     }
 
-    /**
-     * Cập nhật shipment detail
-     */
     public ShipmentDetailResponse updateShipmentDetail(ShipmentDetailRequest request) {
         ShipmentDetail detail = shipmentDetailRepository.findById(request.getId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy shipment detail"));
+                .orElseThrow(() -> new RuntimeException("Khong tim thay shipment detail"));
+        User user = currentUserService.getCurrentUser();
+        assertSameUser(user.getId(), request.getUserId());
+        if (detail.getUser() == null || !detail.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Ban khong co quyen cap nhat thong tin giao hang nay");
+        }
 
         shipmentDetailMapper.updateEntity(detail, request);
         ShipmentDetail updated = shipmentDetailRepository.save(detail);
-
         return shipmentDetailMapper.toResponse(updated);
+    }
+
+    private void assertCurrentUser(Long requestedUserId) {
+        User currentUser = currentUserService.getCurrentUser();
+        assertSameUser(currentUser.getId(), requestedUserId);
+    }
+
+    private void assertSameUser(Long currentUserId, Long requestedUserId) {
+        if (requestedUserId == null || !currentUserId.equals(requestedUserId)) {
+            throw new RuntimeException("Ban khong co quyen thao tac thong tin giao hang nay");
+        }
     }
 }

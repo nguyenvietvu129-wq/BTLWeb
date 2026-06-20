@@ -44,13 +44,13 @@ public class AdminController {
         long totalProducts = productRepository.count();
         long totalOrders = orderRepository.count();
         long totalUsers = userRepository.count();
-        Long totalRevenue = orderRepository.sumTotalPriceByCompletedOrders();
+        Double totalRevenue = orderRepository.sumTotalPriceByCompletedOrders();
 
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalProducts", totalProducts);
         stats.put("totalOrders", totalOrders);
         stats.put("totalUsers", totalUsers);
-        stats.put("totalRevenue", totalRevenue != null ? totalRevenue : 0L);
+        stats.put("totalRevenue", totalRevenue != null ? totalRevenue : 0D);
 
         model.addAttribute("stats", stats);
         model.addAttribute("adminName", username);  // Thêm dòng này
