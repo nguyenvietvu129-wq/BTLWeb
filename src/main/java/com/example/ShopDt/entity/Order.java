@@ -36,4 +36,8 @@ public class Order {
     @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude
     private Set<OrderDetail> orderDetails = new HashSet<>();
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
+    private Set<Payment> payments = new HashSet<>();
 }
