@@ -303,7 +303,8 @@ function renderProducts(products) {
         <div class="san-pham" onclick="goToProductDetail(${p.id})">
             <div class="thumbnail-wrap">
                 <span class="stock-badge ${stockClass}">${stockText}</span>
-                <img src="${getProductImageUrl(p.image)}" alt="${escapeHtml(p.name)}" class="anh-san-pham" onerror="this.src='/images/default-product.png'">
+                <img src="${getProductImageUrl(p.image)}" alt="${escapeHtml(p.name)}" class="anh-san-pham" onerror="this.onerror=null;this.src='/images/default-product.png'">
+
             </div>
             <div class="product-body">
                 <h3 class="ten-san-pham">${escapeHtml(p.name)}</h3>
@@ -450,7 +451,7 @@ function escapeHtml(text) {
  */
 function getProductImageUrl(image) {
     if (!image) {
-        return "/images/default-product.png";
+        return "/uploads/products/default-product.png";
     }
 
     const value = image.trim();

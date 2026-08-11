@@ -1,0 +1,124 @@
+.chatbot-widget{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  width:340px;
+  font-family:Arial, sans-serif;
+  z-index:9999;
+}
+
+.chatbot-btn{
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  background:#3498db;
+  color:#fff;
+  border:none;
+  cursor:pointer;
+  box-shadow:0 8px 18px rgba(0,0,0,.2);
+  font-size:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.chatbot-panel{
+  background:#fff;
+  border:1px solid #e5e5e5;
+  border-radius:14px;
+  box-shadow:0 14px 40px rgba(0,0,0,.15);
+  overflow:hidden;
+}
+
+.chatbot-header{
+  background:#2c3e50;
+  color:#fff;
+  padding:12px 14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.chatbot-header .title{
+  font-weight:700;
+  font-size:14px;
+}
+
+.chatbot-header button{
+  background:transparent;
+  border:none;
+  color:#fff;
+  cursor:pointer;
+  font-size:18px;
+}
+
+.chatbot-messages{
+  height:260px;
+  overflow:auto;
+  padding:12px 12px 6px;
+  background:#fafafa;
+}
+
+.chat-item{
+  margin:8px 0;
+  display:flex;
+}
+
+.chat-item .bubble{
+  max-width:82%;
+  padding:9px 11px;
+  border-radius:14px;
+  line-height:1.35;
+  font-size:13px;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+
+.chat-item.user{justify-content:flex-end;}
+.chat-item.user .bubble{
+  background:#3498db;
+  color:#fff;
+  border-bottom-right-radius:6px;
+}
+
+.chat-item.bot{justify-content:flex-start;}
+.chat-item.bot .bubble{
+  background:#e9eef5;
+  color:#111;
+  border-bottom-left-radius:6px;
+}
+
+.chatbot-input-row{
+  display:flex;
+  gap:8px;
+  padding:10px 12px;
+  border-top:1px solid #eee;
+}
+
+.chatbot-input-row textarea{
+  flex:1;
+  resize:none;
+  height:44px;
+  border:1px solid #ddd;
+  border-radius:10px;
+  padding:10px 10px;
+  font-size:13px;
+  outline:none;
+}
+
+.chatbot-input-row button{
+  width:70px;
+  border:none;
+  border-radius:10px;
+  background:#27ae60;
+  color:#fff;
+  cursor:pointer;
+  font-size:13px;
+}
+
+.chatbot-status{
+  padding:0 12px 10px;
+  font-size:12px;
+  color:#666;
+}
+

@@ -57,6 +57,7 @@ public class SecurityConfig {
                                 "/css/**",                // Static resources
                                 "/js/**",
                                 "/images/**",
+                                "/uploads/**",
                                 "/error"                  // Error page
                         ).permitAll()
 
@@ -84,6 +85,9 @@ public class SecurityConfig {
 
                         // Cart endpoints - cần đăng nhập
                         .requestMatchers("/api/carts/**").authenticated()
+
+                        // Chatbot endpoints - bắt buộc đăng nhập
+                        .requestMatchers(HttpMethod.POST, "/api/chatbot").authenticated()
 
                         // Các API khác
                         .anyRequest().authenticated()

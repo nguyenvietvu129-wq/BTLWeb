@@ -74,6 +74,28 @@
     </main>
 </div>
 
+<!-- Chatbot widget -->
+<link rel="stylesheet" th:href="@{/css/chatbot.css}">
+<div id="chatbot-widget" class="chatbot-widget">
+    <button id="chatbot-open-btn" class="chatbot-btn" type="button" title="Chat với AI">🤖</button>
+
+    <div id="chatbot-panel" class="chatbot-panel" style="display:none;">
+        <div class="chatbot-header">
+            <div class="title">Trợ lý AI - Kho Linh Kiện</div>
+            <button id="chatbot-close-btn" type="button" title="Đóng">×</button>
+        </div>
+
+        <div id="chatbot-messages" class="chatbot-messages"></div>
+        <div id="chatbot-status" class="chatbot-status"></div>
+
+        <div class="chatbot-input-row">
+            <textarea id="chatbot-input" placeholder="Nhập câu hỏi... (Enter để gửi, Shift+Enter xuống dòng)"></textarea>
+            <button id="chatbot-send-btn" type="button">Gửi</button>
+        </div>
+    </div>
+</div>
+
 <script th:src="@{/js/index.js}"></script>
+<script th:src="@{/js/chatbot.js}"></script>
 </body>
 </html>

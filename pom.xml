@@ -48,6 +48,9 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <!-- RestTemplate/JSON are provided by spring-boot-starter-web -->
+        <!-- Không cần thêm dependency cho Gemini vì dùng HTTP + Jackson -->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
